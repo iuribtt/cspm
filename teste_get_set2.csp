@@ -1,0 +1,31 @@
+{- 
+x =0;
+while (x<3)
+x = x + 1
+-}
+
+datatype TOption = coffee | coffeeAndMilk | capuccino | Esperando
+-- datatype TOption = 1 | 2 | 5 | 10
+
+-- channel x, y: {1..10}
+-- channel setX, getX: {1, 2, 5, 10}
+channel setX, getX: TOption
+
+P = setX!coffeeAndMilk -> while
+
+while = getX?x ->(
+			if (x == coffee) then
+				setX?x ->
+				setX!x -> while
+
+			else
+				SKIP
+				)
+
+
+memoria(x) = getX!x -> memoria(x)
+			[]
+			setX?x -> memoria(x)
+
+
+INI = P [|{getX, setX}|]  memoria(0) 

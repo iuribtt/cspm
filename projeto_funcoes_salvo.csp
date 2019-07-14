@@ -1,0 +1,186 @@
+
+-- datatype var =  x | y | z
+
+--datatype list = <(x, 1), (y, 2), (z, 3)>
+
+-- datatype SS = Int | Bool
+
+-- channel v : SS
+
+-- datatype var =  v1 | v2 | v3
+
+datatype Toperacao = soma | subtracao | divisao | multiplicacao
+channel operacao : Toperacao
+
+datatype nome =  int1 | int2 | int3 | int4
+
+datatype TVaraivel = varI.nome.Int | varB.nome.Bool
+
+channel variavel: TVaraivel
+
+ENTRADA = <(int1, 1), (int2, 2), (int3, 5)> --create a sequence with
+
+
+channel A : (nome, Int)
+
+func(x) = 
+	variavel.varI!int1!(3+5) -> SKIP
+
+SOMA() = 
+	operacao.soma
+	
+SUBRACAO() =
+	operacao.subtracao
+
+L() = 
+	SOMA() -> L()
+	[]
+	SUBRACAO() -> L()
+
+exec = func(0)
+
+exec1 = LoopTupla(ENTRADA, 1, 0)
+
+LoopTupla(tupla, analisado, cont) =
+	if (cont < length(tupla)) then
+		-- [] x:{0..length(tupla)-1 } @ A.findVariavelValor(tupla, x) -> SKIP;
+		[] x:{0..length(tupla)-1 } @ 
+									(if(x != analisado) then
+										A.findVariavelValor(tupla, x) -> SKIP
+									else  SKIP
+									)
+	else
+		SKIP
+
+exec2 = LoopCombinacoes(ENTRADA, 0)
+LoopCombinacoes(tupla, cont) =
+		if (cont < length(tupla)) then
+			[] x <- {0..2}, y <- {0..2}, x+y < 2 @ 
+												(
+													A.findVariavelValor(tupla, x) -> SKIP
+												)
+		else SKIP			
+		
+
+combinationUtil(tupla, count, cobinacoesDe, tamanho, saida) =
+		if (count < length(tupla)) then
+
+			--executará essa linha a quantidade de vezes necessárias dependendo do cobinacoesDe
+			combinationUtil(tupla, count+1, cobinacoesDe, tamanho, saida^combinacoes2(tupla,0,0,cobinacoesDe, <>, <>, 1, false))
+			
+
+		-- caso a tupla chegue o fim e o contador de combinacoes nao
+		else if (count == length(tupla) and cobinacoesDe < length(tupla) -1 ) then --quantidade de combinacoes
+			combinationUtil(tupla, 0, cobinacoesDe + 1, tamanho, saida)
+
+		-- caso a tupla chegue o fim e o contador de combinacoes tbm
+		else
+			saida
+
+exec3 = combinationUtil(ENTRADA, 0, 0, length(ENTRADA), <>)
+
+--create combinacoes dos elementos em 1, 2, 3, 4...
+combinacoes(tuplas, cobinacoesDe, count, tamanho, parcial, semHead, saida) = 
+		if( count < cobinacoesDe - 1) then
+			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, parcial^getHeadList(semHead), getSemHead(semHead), saida)
+		else if (count <= tamanho) then
+			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, getSemHead(parcial), semHead, saida)
+		else
+			saida^<parcial>
+
+exec5 = combinacoes(ENTRADA, totalCombinacaoSimple(length(ENTRADA), 2), 0, length(ENTRADA), <>, ENTRADA, <>)
+
+combinacoes2(tuplas, v1, v2, combinacoes, temp, saida, debug, flag) = 
+	if(v1+combinacoes <= length(tuplas) and length(temp) < combinacoes and not(flag)) then --maximo de posicoes que v1 pode se mover
+			combinacoes2(tuplas, v1, v2+1, combinacoes, temp^<findVariavelValor(tuplas, v2)>, saida, debug * 10, true)
+	else -- caso chegou no maximo de combinacoes
+		-- o temp bateu as combinacoes adiciona na saida, remove a cabe e incrementa v2
+		if (v1+combinacoes <= length(tuplas) and length(temp) == combinacoes and v2 < length(tuplas)) then 
+			combinacoes2(tuplas, v1, v2+1, combinacoes, getSemHead(temp), saida^<temp>, debug+1, true)
+		--adiciona a variavel na cabeca, e incrementa o v2
+		else if (v1+combinacoes <= length(tuplas) and v1+combinacoes <= length(tuplas) and length(temp) < combinacoes) then 
+			combinacoes2(tuplas, v1, v2, combinacoes, temp^<findVariavelValor(tuplas, v2)>, saida, debug * 100, true)
+		else if (v1+combinacoes <= length(tuplas) and v2 == length(tuplas)) then
+			combinacoes2(tuplas, v1+1, v1+1, combinacoes, <>, saida, debug*1000, false)
+		else
+			saida
+			
+exec6 = combinacoes2(ENTRADA,0,0,3, <>, <>, 1, false)
+
+
+combinacoesDe(tuplas, count, saida)=
+		if (count <= length(tuplas)) then
+			combinacoesDe(tuplas, count+1, saida^combinacoes2(tuplas,0,0,count+1, <>, <>, 1, false))
+		else
+			saida
+
+exec7 = combinacoesDe(ENTRADA, 0, <>)
+
+
+test = ENTRADA^<head(ENTRADA)>
+test1 = <<(int1,1)>, <(int2,1)>, <(int3,5), (int1,1)> >
+test2 = head(test1)
+test3 = tail(test1)
+test4 = getLast(test1)
+test5 = getSemHead(test1)
+test6 = getSemHead(<(int1, 3)>)
+test7 = length(test1)
+
+--fatorial de um numero
+fatorial(count) = 
+	if (count > 0 ) then
+	  count * fatorial(count -1)
+	else
+	 1
+
+-- numeto total de combincacoes sem repeticoes, a reticao seria uma multimplicacao
+-- termos é o numero de termos ex: a, b, c, d 
+-- uso: totalCombinacoes(4)  15
+
+totalCombinacoes(termos) = 
+	totalCombinacoes_(termos, termos)
+
+totalCombinacoes_(termos, count) = 
+	if (count > 0) then
+		totalCombinacaoSimple(termos, count)
+	else
+		0
+
+totalCombinacaoSimple(termos, combinacoes) = 
+	(fatorial(termos) / (fatorial(combinacoes) * fatorial(termos - combinacoes)))
+
+exec4 = totalCombinacaoSimple(4, 2)
+
+getHeadList(<r>^t) = <r>
+-- getSemHead(t^<l>) = t
+getSemHead(<>) = <>
+getSemHead(<r>) = <>
+getSemHead(<r>^t^<l>) = <r>^t
+getLast(<r>^t^<l>) = l
+
+{- Obter valores da tupla -}
+getVariavel((variavel, valor)) = variavel
+-- uso: getValor(findVariavelValor(ENTRADA, 1, 0))
+getValor((variavel, valor)) = valor
+
+findVariavelValor_(<tupla>^r, posicao, incremento) =
+		if(posicao == incremento) then
+			tupla
+		else
+			findVariavelValor_(r, posicao, incremento + 1)
+
+findVariavelValor(entrada, posicao) =
+	findVariavelValor_(entrada, posicao, 0)
+
+-- uso: test_findVariavelValor
+test_findVariavelValor = findVariavelValor(ENTRADA, 1) 
+
+DIV = |~| _ : {0} @ DIV
+
+
+productions(x) =  { x.z | z<-extensions(x) }
+channel c : {0..9}
+Q(a) = SKIP
+P = c!7->SKIP [| {| c |} |] c?x->Q(x)
+
+nametype T = ({(int1, 1), (int2, 2), (int3, 5)})

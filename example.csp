@@ -1,0 +1,30 @@
+--channel a,b
+--P = a -> b -> STOP
+
+channel done
+channel x, y : {0..1}.Bool
+
+P1 = x?a?b -> STOP
+
+print 1+1
+print head(<5..>)
+
+
+--channel tock
+
+--OneStep(_) = 1
+
+--Timed(OneStep) {
+--   P = a -> P
+--}
+
+--P' = a -> tock -> P' [] tock -> P'
+
+
+N = 6
+
+PHILNAMES= {0..N-1}
+FORKNAMES = {0..N-1}
+
+channel thinks, sits, eats, getsup:PHILNAMES
+channel picks, putsdown:PHILNAMES.FORKNAMES

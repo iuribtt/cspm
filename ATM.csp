@@ -1,0 +1,30 @@
+CARD = {0..9}
+datatype pinnumbers = PIN.Int
+fpin(c) = PIN.c
+PINs = {fpin(d) | d <- CARD}
+WA = {10,20,30,40,50}
+channel incard, outcard:CARD
+channel pin:PINs
+channel req, dispense:WA
+
+ATM1 = incard?c -> pin.fpin(c) ->
+	req?n -> dispense!n ->
+	outcard.c -> ATM1
+
+
+channel refuse
+ATM2 = incard?c -> pin.fpin(c) -> req?n ->
+	( 
+		dispense!n -> outcard.c -> ATM2
+		|~|
+		refuse -> outcard.c -> ATM2
+	)
+
+
+ATM3(saldo) = incard?c -> pin.fpin(c) -> req?n ->
+	if(saldo-n >= 0) then (
+		dispense!n -> outcard.c -> ATM3 (saldo-n)
+	) else (
+		refuse -> outcard.c -> ATM3(saldo)
+	)
+

@@ -1,0 +1,34 @@
+--O objetivo desse exercicio é fazer operações basicas de uma maquina de cafeteira automatica
+datatype TOption = coffee | coffeeAndMilk | capuccino -- existe um tipo novo chamado TOption cujo elementos externos são ...
+
+channel options, refil: TOption -- crio um canal com as opções, ele transporta um dos valores do conjunto
+
+MAX = 10 -- é um constante númerica
+
+channel validateCoffee -- é um evento e precisa ser introduzido e, também, precisa se introduzido em um processo
+
+MaqCof(coffeeLimit, cmLimit, capuLimit) = --processo
+	if (coffeeLimit == 0) then 
+		--refil.coffee é um evento e precisa do '->'
+		refil.coffee -> MaqCof(MAX, cmLimit, capuLimit) 
+	else
+		options.coffee -> MaqCof(coffeeLimit - 1, cmLimit, capuLimit)
+	
+	[]
+	if (cmLimit == 0) then 
+		refil.coffeeAndMilk -> MaqCof(coffeeLimit, MAX, capuLimit) 
+	else
+		options.coffeeAndMilk -> MaqCof(coffeeLimit, cmLimit - 1, capuLimit) 
+	[]
+	if (capuLimit == 0) then 
+		refil.capuccino -> MaqCof(coffeeLimit, cmLimit, MAX) 
+	else
+		options.capuccino -> MaqCof(coffeeLimit, cmLimit, capuLimit - 1 )
+	
+	
+Cafeteria = MaqCof(MAX, MAX, MAX) --processo
+
+-- Explicacao de evento deterministic e não deterministico
+-- Quando colocar a moeda a escolhe depende da maquina - nao deterministica
+
+

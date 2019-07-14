@@ -1,0 +1,10 @@
+channel a:{0}
+channel b:{1}
+channel up:{2}
+channel down:{3}
+
+Sigma = {a, b, up, down}
+
+LCOUNT(l,n) = 
+	(n<l & up -> LCOUNT(l,n+1))
+	[] (n>0 & down -> LCOUNT(l,n+1))

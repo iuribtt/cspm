@@ -1,0 +1,232 @@
+
+channel a, b, c, d, e, f, g, h, k, j
+numbers = {1..4}
+channel chNumbers:numbers
+letras = {a, b, c, d, e, f}
+channel chLetras: letras
+
+
+
+EVENTO = chNumbers?var->chNumbers!var  -> EVENTO
+
+P(x) = ([] x:letras @ x -> P(x)) --> -->:probe P(a) percorrer todas as variacoes do eventos de chLetras
+--Equivalente a:
+P1(x) = chLetras?x -> chLetras!x -> P1(x) -->:probe P1(a)
+
+
+DATA = {0,1}
+channel left, right:DATA
+COPY = left?x -> right!x -> COPY
+
+
+--Escolha Externa
+
+ESCOLHA = (a -> a -> STOP)
+		   []
+		  (a -> b -> STOP)
+
+ESCOLHA1 = a -> 
+			(
+			 (a -> STOP)
+		     []
+		     ( b -> STOP)
+		    )
+-- pode rejeitar a ou b
+ESCOLHA2 =  (a -> STOP)
+		     |~| --> Escolha interna, irá ser introduzido 't'(tal) no inicio
+		    ( b -> STOP)
+		    
+X = {1..5}
+channel chX:X 
+RUN(x) = [] x:letras @ x -> RUN(x)
+
+RR = RUN(a)
+
+-- Composição Paralela Síncrona
+-- P [|Events|] Q
+
+-- Composição paralela alfabetizada
+-- P [X||Y] Q
+-- Composição paralela generalizada
+-- P [|X|] Q
+-- Entrelaçamento
+-- P ||| Q
+
+
+P2 = (a -> a -> STOP)
+	  [] 
+	 (b -> STOP)
+
+Q = (a -> STOP)
+	 [] 
+	(c -> a -> STOP)
+
+Paralelo = P2 [|Events|] Q
+
+
+letrasExt = { a, b, c, d, e, f, g, h, k, j}
+channel chLetrasExt: letrasExt
+
+COPY1(varA, varB) = varA?x -> varB!x -> COPY1(varA, varB) -- somente pega os elementos em comum para a proxima saida
+
+CALL = COPY1(chLetras, chLetras)
+
+N = 6
+in= {0..N-1}
+
+channel picksup, putsdown: in.in
+
+FORK(i) = (picksup.i.i -> putsdown.i.i -> FORK(i))
+		 [] 
+		(picksup.((i+1)%N).i -> putsdown.((i+1)%N).i -> FORK(i))
+
+channel up, down:DATA
+
+Nu(x)= up?xx->left?yy->right!yy->down!xx->Nu(x + xx * yy)
+
+-- Terminação
+
+--P ; Q -> significa que todos processos de P terminaram por um SKIP, e então irá seguir para Q
+
+
+TB = left?x -> TB1(x)
+TB1(x) = (right?x -> SKIP)
+		  [] 
+		 (left?y -> right!x -> TB1(y))
+
+IterBuff2 = TB
+
+
+-- Type Annotations
+fu :: Set a => (a) -> {a} --tem que ser usado em uma funcao
+fu(x) =
+   let
+      g :: (a) -> {a}
+      g(x) = {x}
+   within g(x)
+
+-- pa é uma funcao que tem que satisfazer o "type constraint" Eq (os operadores tem que ser do mesmo tipo) e o resultado deve ser Bool
+pa :: Eq a => (a, a) -> Bool 
+pa(x, y) = if (x == y) then true else false
+
+
+datatype NamedColour = Red | Green | Blue
+
+datatype ComplexColour = Named.NamedColour | RGB.{0..255}.{0..255}.{0..255}
+
+-- union({Named.c | c <- NamedColour}, {RGB.r.g.b | r <- {0..255}, g <- {0..255}, b <- {0..255}})
+datatype XX = A.{x.y | x <- {0..2}, y <- {0..2}, x+y < 2} --  is not rectangular as the datatype declaration 
+
+
+datatype Tree = Leaf.{0..5} | Node.{0..10} -- {Leaf.0, Leaf.1, ... Node.0, Node.1, Node.2, Node.3, ...
+
+datatype Tree2 = Leaf2.Int | Node2.Int.Tree2.Tree2 -- Data Type recursivo
+
+flatten(Leaf2.x) = <x> -- flatten(Leaf.2) = <2>
+flatten(Node2.x.l.r) = flatten(l)^<x>^flatten(r) -- flatten(Node2.1.Leaf2.3.Leaf2.5) = <3, 1, 5>
+
+--In general a CSPM datatype declaration takes the following form:
+--datatype N = C1.te1 | C2.te2 | ...
+
+-- Type Expressions
+datatype XXX = AA.(Bool, Bool) -- {AA.(false, false), AA.(false, true), AA.(true, false), AA.(true, true)}
+datatype YYY = BB.Bool.Bool -- {BB.false.false, BB.false.true, BB.true.false, BB.true.true}
+
+
+-- Channels
+channel done -- é um Event
+channel xxx, yyy : {0..1}.Bool
+
+-- Subtypes
+datatype Type = Y.Bool | Z.Bool -- {Y.false, Y.true, Z.false, Z.true}
+subtype SubType = Y.Bool -- {Y.false, Y.true}
+
+nametype S = {0..1}.{0..1} --{0.0, 0.1, 1.0, 1.1}
+
+
+--Modules
+
+-- module T
+--    X = 2
+--    Y = X + 2
+-- exports
+--    Z = 2 + Y + X
+-- endmodule
+
+-- funcss(x) = T::Z -- ModuleName::VariableName.
+
+{- {|canal|} retorna todos os eventos de
+um canal
+– {|ch|} = {…,ch.-2, ch.-1, ch.0, ch.1, …}
+-}
+
+{- Seja Sigma um conjunto de eventos {a,b,up,down}
+
+[]x:Sigma @ x -> STOP
+
+a -> STOP
+[ ]
+b -> STOP
+[ ]
+up -> STOP
+[ ]
+down -> STOP
+-}
+
+channel batePalma, ergueBraco, pula, agacha
+
+ACAO = {batePalma, ergueBraco, pula,agacha}
+
+RU(x) = [] z:ACAO @ z -> RU(z)
+
+R = RU(batePalma)
+
+
+-- P =T Q 
+-- traces(P) = traces(Q)
+-- P é igual a Q no modelo de traces ou P tem os mesmo traces de Q
+
+-- P [T= Q 
+-- traces(Q) ⊆ traces(P)
+-- P é refinado por Q no modelo de traces ou Q refina P no modelo de traces
+
+-- P =M Q é um tipo de refinamento onde: P [M= Q e Q [M= P  (M é aos modelos (T, F, FD, etc))
+
+
+--• Traces (T)
+--– Registra as sequências de eventos que PODEM ser observadas
+---Propriedades safety (nada de ruim acontece)
+
+--• Failures (F)
+--– Inclui o modelo T + registro de falhas (o que pode ou não pode
+---ser refutado). Não-determinismo e deadlock são registrados.
+---Propriedades liveness (o que deve acontecer)
+
+--• Failures-divergences (FD)
+--– Inclui o modelo F + registro dos traces onde acontece livelock(divergência)
+
+
+datatype DIRECAO = NORTE | LESTE | OESTE | NOROESTE | SUL
+channel move : DIRECAO
+MOVE(direcao) = move!direcao -> SKIP
+
+TORRE = MOVE(NORTE); TORRE
+[] MOVE(SUL); TORRE
+[] MOVE(LESTE); TORRE
+[] MOVE(OESTE); TORRE
+
+TORRE2 = ([] dir : {NORTE,SUL,LESTE,OESTE} @ MOVE(dir); TORRE2)
+RAINHA = ([] dir : DIRECAO @ MOVE(dir); RAINHA)
+
+
+TERMINA = a -> SKIP ||| b -> c -> SKIP -- (termina depois de a e c)
+
+NUNCA_TERMINA = a -> SKIP ||| STOP -- (nunca termina)
+
+
+TT = a->ZZ
+ZZ = b->TT
+
+HIDING = (a -> TT [] b -> ZZ)\{a}
+
+HIDING2 = TT\{a,b} |~| ZZ\{a}

@@ -1,0 +1,77 @@
+datatype Tree = Leaf.{0..5} | Node.{0..10} -- {Leaf.0, Leaf.1, ... Node.0, Node.1, Node.2, Node.3, ...
+
+datatype Tree2 = Leaf2.Int | Node2.Int.Tree2.Tree2 -- Data Type recursivo
+
+-- loop 
+
+{-
+
+ <expr> ::= <term>|<expr><addop><term>
+
+ <if then statement>::= if ( <expression> ) <statement>
+ <if then else statement>::= if ( <expression> ) <statement no short if> else <statement>
+ <constant expression> ::= <expression>
+ <expression> ::= <assignment expression>
+
+ <assignment expression> ::= <conditional expression> | <assignment>
+
+ <assignment> ::= <left hand side> <assignment operator> <assignment expression>
+
+-}
+
+datatype AddOp = plus
+datatype Term = termo
+datatype Expr = expressao.Term | expressaoSoma.Expr.AddOp.Term
+
+channel Prog: Expr
+channel v
+
+-- f :: (a) -> termo
+-- f(a) = a -> SKIP
+
+-- n1, n2, nM :: Type
+-- v:: Prog
+
+g :: Eq a => (a, a) -> Bool -- define os tipo de entrada da funcao com sendo iguais e do tipo Bool
+g(x, y) = if (x == y) then true else false -- exemplo de chamada  g(True, True)
+
+Programa = 
+		Prog.expressao.termo -> SKIP
+		[]
+		Prog.expressaoSoma.expressao.termo.plus.termo -> SKIP
+
+criarExpressao(Programa) = 
+		Programa -> SKIP
+		[]
+		Prog.expressaoSoma.expressao.termo.plus.termo -> SKIP
+
+-- C = criarExpressao(Prog)
+
+channel ev, ev1, None
+datatype TValor = varI.Int | varB.Bool
+channel valor: TValor
+
+Atribuicao(v1, v2)=
+
+	if v2 > 0 then
+		ev1 -> Atribuicao(v1, v2-1)
+	else
+		ev -> valor.varI.v2 -> SKIP
+	--ev -> valor.v1.5 -> SKIP
+
+
+Main (deep, input, output, variaveis, atribuicao) = 
+
+	if atribuicao > 0 then
+		
+		ev -> Main(deep, input, output, variaveis, atribuicao-1);
+		ev1 -> SKIP
+	else
+		SKIP
+
+--MaxDeep, input, output, vars, atribuicao 
+Call = Main(5, None, 5, 2, 2)
+
+test = Atribuicao(varI, 5)
+
+

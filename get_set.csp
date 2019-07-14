@@ -1,0 +1,24 @@
+{- x =0;
+-- while (x<3)
+-- x = x + 1
+-}
+
+channel setX, getX: Int
+
+while = getX?x-> (
+			if (x <30) then
+				(setX?x->SKIP;
+				setX!x + 4 -> while ->SKIP)
+			else
+				SKIP
+			)
+
+P = setX!0->SKIP; while->SKIP
+
+
+memoria(x) = getX!x -> memoria(x)
+			[]
+			setX?x -> memoria(x)
+
+
+INI = P [|{|getX, setX|}|] memoria(0) 

@@ -1,0 +1,68 @@
+{- Java BNF: http://cs.au.dk/~amoeller/RegAut/JavaBNF.html
+-- <assignment> ::= <left hand side> <assignment operator> <assignment expression>
+-- <if then statement>::= if ( <expression> ) <statement>
+-- <if then else statement>::= if ( <expression> ) <statement no short if> else <statement>
+-- <constant expression> ::= <expression>
+-- <expression> ::= <assignment expression>
+
+-- <assignment expression> ::= <conditional expression> | <assignment>
+
+-- <assignment> ::= <left hand side> <assignment operator> <assignment expression>
+
+-- <expr> ::= <term>|<expr><addop><term>
+
+-- datatype cmd = Atributo | IF
+
+-}
+
+datatype var =  a | b | c
+datatype op = add | sub | div | multi
+
+datatype exp = expB.var.Bool | expA.var.Int | expS.var.Int.op.Int
+
+datatype texpB = texptB.var.Bool
+datatype texpA = texptA.var.Int
+
+datatype programa = skip | Atribuicao.var.texpA.programa | IF.texpB.programa | Atribuicao2.var.Int 
+
+
+channel ev, ev1, None
+datatype TValor = varI.Int | varB.Bool
+channel valor: TValor
+
+-- Option 1
+prog(deep, attr, ifs) =  
+		if deep > 0 then
+			ev -> prog(deep-1, attr, ifs)
+		else
+			ev -> SKIP
+
+pg = prog(5, 8, 10)
+
+-- Option 2
+
+operation(expS.var.valor1.op.valor2) = 
+		if(op == add) then
+			valor1 + valor2
+		else
+			valor1 - valor2
+
+toperation = operation(expS.a.1.add.2) --ver o resultado da operacao
+
+prog2(programa, deep) = programa 
+
+pg2 = prog2((Atribuicao.a.texptA.a.5).(Atribuicao.a.texptA.a.4).(Atribuicao.a.texptA.a.2), 3)
+
+Teste = Atribuicao2.a.5 -> SKIP 
+
+
+
+
+
+
+
+
+
+
+
+

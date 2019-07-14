@@ -1,0 +1,62 @@
+Site da Disciplina: http://www.cin.ufpe.br/~if711/
+
+Linguagem CSPM
+Programa utilizado FDR4
+
+A instalação de FDR4 é bem simples. Basta visitar o site https://www.cs.ox.ac.uk/projects/fdr/, baixar o arquivo de instalação, instalar e usar;
+
+Adicionar complemento no Sublime editor:
+
+Preferences -> Package Control -> digitar "Install Package" e Enter-> Digitar "CSPM" e Enter
+
+Va até a pasta da instalacao default e crie um novo arquivo exe com o nome "fdr3.exe", que é o qual o puglin irá tentar encontrar. (https://packagecontrol.io/packages/CSPM <- descricao do puglin)
+
+Utilize Alt + Shift + R abrir o ternimal do FDR4 no Sublime
+
+Comentario:
+ -- unica linha
+ {- -} múltiplas linhas
+
+Utilize:
+
+:probe <identificador> -> arvore de execucao
+:graph <identificador> -> grafico de execucao
+
+channel ch: T
+ch?var para uma entrada de dados
+ch!exp para uma saída de dados
+ch.expS para sincronização simples e/ou saída de dados
+
+channel ev (É um evento)
+channel ch: Int (É um canal)
+
+<> = sequencia vazia
+s = sequencia
+head (<h>^r) = h (head é um elemento)
+tail (<h>^r) = r (o resto é uma sequência)
+<a,b,c> ^ <e> = <a,b,c,e>
+
+
+datatype COFFEE = coffee| coffee_milk | coffee_express -- dataype 
+MAX = 10
+STOCK = <(coffee, MAX), (coffee_milk, MAX), (coffee_express, MAX)> --create a sequence with
+
+
+channel selequencia:COFFEE.{0..MAX} -- criar um conjunto de combinacoes coffe0..., coffee_milk1 ..., coffe_express1..
+channel insert:COFFEE.{0..MAX} 
+channel missing:COFFEE
+channel coin -- channel para representar inserir moeda
+
+get({x}) = x --se vc passar para get um conjunto unitario ele retorna o valor (mas poderia pegar pelo head)
+getType((t, v)) = t --passando uma tupla retorna o primeiro elemento
+getValue((t,v)) = v --passando uma tupla retorna o segundo elemento
+
+
+coin?c -> (c <= 2 &  coffee-> //caso c for valido
+	   []
+	   c <= 4 & coffeeMilk -> //caso c for valido
+	   []
+	   c <= 10 & cappuccino -> //caso c for valido
+	   not c <=2 & not c <= 4 & not c <= 10 & insiraMaisCoins -> ) //else ->isso garante a tautologia, ou seja, c ou nao c
+
+ 

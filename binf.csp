@@ -1,0 +1,11 @@
+
+--Excute -> :probe Binf(<valor_aqui>)
+DATA = {0,1}
+channel left, right:DATA
+COPY = left?x -> right!x -> COPY
+
+Binf(s) =
+ if s==<> then
+ left?x -> Binf(<x>)
+ else (left?x -> Binf(s^<x>)
+ []right!head(s) -> Binf(tail(s))) 

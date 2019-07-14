@@ -1,0 +1,23 @@
+
+--Todos as opções iram ocorrer sempre
+
+channel batePalma, ergueBraco, pula, agacha
+
+SUPERIOR = 
+	batePalma -> SUPERIOR
+		[]
+	ergueBraco -> SUPERIOR
+
+INFERIOR = 
+	pula -> INFERIOR
+		[]
+	agacha -> INFERIOR
+
+
+CORPO = SUPERIOR ||| INFERIOR
+
+
+X = {batePalma, ergueBraco, pula, agacha}
+
+assert CORPO [T= RUN(X)
+assert RUN(X) [T= CORPO

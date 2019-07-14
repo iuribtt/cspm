@@ -1,0 +1,59 @@
+datatype TOption = coffee | almondMilk | cappuccino | coffeeAQ | almondMilkAQ | cappuccinoAQ
+channel option, refil, teste: TOption
+channel insert_another_coin, give_change, return_coin, comprar, sangria, comprarCoffee, comprarCappuccino, comprarAlmondMilk
+
+MAX_CAPSULE = 2
+
+MAX_CAIXA = 10
+
+COIN = {0..9}
+channel coins:COIN
+CF_PRECO = 2
+AM_PRECO = 3
+CP_PRECO = 5
+
+PRECOS = {CF_PRECO, AM_PRECO, CP_PRECO}
+-- channel preco:PRECOS
+
+caixa(opt, preco, inputCoins, userCoins, userChange, totalAmount, sinc) =  
+
+									(totalAmount <  MAX_CAIXA) & (
+										(inputCoins + userCoins < preco) &  insert_another_coin -> coins?x -> caixa (opt, preco, x, (inputCoins + userCoins), 0, (inputCoins + userCoins), sinc) 
+											[]								
+										(inputCoins + userCoins == preco) & sinc -> option.opt -> coins?x -> caixa(opt, preco, x, 0, 0, totalAmount, sinc)
+											[]
+										(inputCoins + userCoins > preco) & give_change -> sinc -> option.opt -> coins?x -> caixa(opt, preco, x, 0, 0, totalAmount, sinc)  
+									) 
+									[]
+									(totalAmount >=  MAX_CAIXA) & sangria -> caixa (opt, preco, 0, 0, 0, 0, sinc)  
+											
+
+coffeeMachine (opt, limit, sinc) = 
+
+					 (limit == 0) & refil.opt -> coffeeMachine(opt, MAX_CAPSULE, sinc)
+					 []
+					 (limit != 0) &(
+						option.opt -> sinc -> coffeeMachine(opt, limit-1, sinc)
+					 ) 
+
+moduloCafe = 
+			option.coffeeAQ -> coffeeMachine (coffee, MAX_CAPSULE, comprarCoffee)
+			[]
+			option.almondMilkAQ -> coffeeMachine (almondMilk, MAX_CAPSULE, comprarCoffee)
+			[]
+			option.cappuccinoAQ -> coffeeMachine (cappuccino, MAX_CAPSULE, comprarCoffee)
+
+
+moduloCaixa = 
+			caixa (coffee, CF_PRECO, 0, 0, 0, 0, comprarCoffee)
+			[]
+			caixa (almondMilk, AM_PRECO,0, 0, 0, 0, comprarCoffee)
+			[]
+			caixa (cappuccino,CP_PRECO, 0, 0, 0, 0, comprarCoffee)
+
+
+Cafeteria  = moduloCafe
+				[|{comprarCoffee}|] 
+			moduloCaixa
+
+assert Cafeteria :[deadlock free[F] ]

@@ -1,0 +1,3 @@
+DATA = {0,1}
+channel left, right:DATA
+COPY = left?x->right?x->COPY

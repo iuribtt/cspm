@@ -1,0 +1,75 @@
+datatype TOption = coffee | coffeeAndMilk | capuccino
+TCoin = {1, 2, 5, 10}
+datatype TOwner = Yes | No 
+datatype SafeState = Full | NotFull 
+channel Option, Dispense, refil, ok: TOption
+channel InsertCoin: TCoin
+channel Owner: TOwner
+channel SafeFull: SafeState
+channel OnwerWithdraw,WrongChange,Explosion,ReturnChange,Sync1,Sync2, Troco
+channel SendCash: {1..100}
+channel SendTroco: {0..100}
+channel Misturar: TOption
+
+datatype TMixOption = milk | coffee_only | chocolate
+channel MixMisture: TMixOption
+
+PRECO_CAFE = 2
+PRECO_CAFEELEITE = 3
+PRECO_CAPUCCINO =  7
+
+MAX = 2 -- Constante numérica
+MAXSAFE = 20
+
+
+Caixa(moedasUsuario, cash) = 
+
+	if (moedasUsuario >= PRECO_CAFEELEITE) then 
+		SendCash!moedasUsuario -> SendTroco?t -> Troco -> Caixa(0, cash + (moedasUsuario-t))
+		[]
+		InsertCoin?x -> Caixa(moedasUsuario+x, cash)
+	else
+		InsertCoin?x -> Caixa(moedasUsuario+x, cash)
+
+
+Misturador() =
+		Misturar?opt -> (
+			if(opt == coffee) then
+				MixMisture.coffee_only -> Misturador()
+
+			else if(opt == coffeeAndMilk) then
+				MixMisture.coffee_only -> Misturador()
+				|||
+			 	MixMisture.milk -> Misturador()
+
+			else
+				MixMisture.coffee_only -> Misturador()
+			 	|||
+			 	MixMisture.chocolate -> Misturador()
+		)
+
+
+MaquinaDeCafe(max) = 
+			SendCash?v ->( 
+				if (v >= PRECO_CAFEELEITE) then
+					
+						(
+						if (max-1 == 0) then
+				 			Option.coffee -> Misturar!coffee-> refil.coffee -> SendTroco!(v-PRECO_CAFE) -> MaquinaDeCafe(max-1)
+				 		else
+				 			Option.coffee -> SendTroco!(v-PRECO_CAFE) -> MaquinaDeCafe(max-1)
+					 	)
+					 	
+  					[]
+            		Option.coffeeAndMilk -> (max == 0 ) & refil.coffee -> SendTroco!(v-PRECO_CAFEELEITE) -> MaquinaDeCafe(max-1)
+            	else
+            		STOP --caso o preco do cafe seja impossivel de fazer uma compra
+            )
+-- MISTUADORES = Misturador(coffee) ||| Misturador(coffeeAndMilk) ||| Misturador(capuccino)
+-- Sinc = MaquinaDeCafe(MAX)[|{|mistura|}|]Misturador()
+SINC = Misturador()[|{|Misturar|}|]MaquinaDeCafe(MAX)
+
+Cafeteria = Caixa(0, 0)[|{|SendCash, SendTroco|}|]SINC
+
+assert Cafeteria :[deadlock free[F] ]
+-- Cafeteria = Caixa(0, 0)[|{|SendCash, SendTroco|}|]MaquinaDeCafe(MAX)

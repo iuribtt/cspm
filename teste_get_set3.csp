@@ -1,0 +1,23 @@
+
+datatype var =  x | y | z
+
+datatype TPrograma = X.(x, Int)| Y.(y, Int)| Z.(z, Int)
+
+channel setX:TPrograma
+channel getX, print: <(x, Int), (y, Int), (z, Int)>
+
+MEMORIA = <(x, 1), (y, 2), (z, 0)> --create a sequence with
+
+memoria(x) = 
+	if(x< 3) then
+		getX!x -> memoria(x)
+		[]
+		setX?x -> memoria(x)
+	else SKIP
+
+main = (
+		setX!0 -> SKIP;
+	   	getX?x -> setX!x+1 -> SKIP;
+	   	getX?x -> print!x -> SKIP
+	   ) [|{|getX, setX|}|] 
+		memoria(MEMORIA)

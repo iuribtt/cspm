@@ -1,0 +1,78 @@
+--O objetivo desse exercicio é fazer operações basicas de uma maquina de cafeteira automatica
+datatype TOption = coffee | coffeeAndMilk | capuccino -- existe um tipo novo chamado TOption cujo elementos externos são ...
+
+channel options, refil: TOption -- crio um canal com as opções, ele transporta um dos valores do conjunto
+
+channel colocarMoeda, colocarMaisMoedas, naoTemEsseCafe, retornaTroco, devolverMoedas, efetuar_sangria, ERROR
+MAX = 10 -- Max numero de refil de cafe
+
+--preco dos caffee
+PRECO_COFFEE = 2
+PRECO_COFFEE_AND_MILK = 5
+PRECO_CAPUCCINO = 8
+
+MAX_CAIXA = 20
+
+MOEDAS = {0..9}
+channel possible_coins: MOEDAS
+
+func(opt, tipoPreco, coffeeLimit, cmLimit, capuLimit, moedas, moedas_usuario, capacidate_caixa) =
+
+	if (coffeeLimit == 0) then -- nao tem cafe :(
+		naoTemEsseCafe -> refil.opt -> MaqCof(MAX, cmLimit, capuLimit, 0, moedas_usuario, capacidate_caixa) -- o troco vai ser o valor inserido
+	else --caso tenha cafe
+		if ((moedas + moedas_usuario) == tipoPreco) then --caso seja maior ou igual ao preco do cafe
+			options.opt -> (
+							MaqCof(coffeeLimit - 1, cmLimit, capuLimit, 0, 0, (capacidate_caixa + tipoPreco))
+							|~|
+							ERROR -> MaqCof(coffeeLimit - 1, cmLimit, capuLimit, 0, 0, (capacidate_caixa + tipoPreco))
+							)
+		else
+			if ((moedas + moedas_usuario) > tipoPreco) then --caso seja maior ou igual ao preco do cafe
+				options.opt -> (
+								retornaTroco -> MaqCof(coffeeLimit - 1, cmLimit, capuLimit, 0, 0, (capacidate_caixa + tipoPreco))
+			 					|~| 
+			 					ERROR -> MaqCof(coffeeLimit - 1, cmLimit, capuLimit, 0, 0, (capacidate_caixa + tipoPreco))
+			 					)
+			else -- caso seja inserida menos moedas, solicitar mais
+				options.opt -> 
+				(
+				colocarMaisMoedas -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, (moedas + moedas_usuario), capacidate_caixa)
+				|~| 
+			 	ERROR -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, (moedas + moedas_usuario), capacidate_caixa)
+				)
+-- troco -> representa o troco que o usuario deve receber
+-- moedas_usuario_maquina -> represente o que tem na maquina
+
+MaqCof(coffeeLimit, cmLimit, capuLimit, moedas, moedas_usuario, capacidate_caixa) = --processo
+
+	if(capacidate_caixa <= MAX_CAIXA) then --  se o caixa da maquina esta no limite de moedas
+		if (moedas != 0) then -- colocou moeda, espera troco ou
+			(
+				func(coffee, PRECO_COFFEE, coffeeLimit, cmLimit, capuLimit, moedas, moedas_usuario, capacidate_caixa)
+			)[]
+			(
+				func(coffeeAndMilk, PRECO_COFFEE_AND_MILK, coffeeLimit, cmLimit, capuLimit, moedas, moedas_usuario, capacidate_caixa)
+			)[]
+			(
+				func(capuccino, PRECO_CAPUCCINO, coffeeLimit, cmLimit, capuLimit, moedas, moedas_usuario, capacidate_caixa)
+			)
+
+		else --reinicia e pede para selecionar um valor dentre os possiveis (possible_coins)
+			if( moedas_usuario > 0) then --verifica se o usario tem moedas
+				devolverMoedas -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, moedas_usuario, capacidate_caixa)
+			else
+				colocarMoeda -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, moedas_usuario, capacidate_caixa)
+	else
+		if( moedas_usuario > 0) then --verifica se o usario tem moedas
+				devolverMoedas -> efetuar_sangria -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, moedas_usuario, MAX_CAIXA)
+			else
+				efetuar_sangria -> possible_coins?x -> MaqCof(coffeeLimit, cmLimit, capuLimit, x, moedas_usuario, MAX_CAIXA)
+
+
+Cafeteria = MaqCof(MAX, MAX, MAX, 0, 0, 0) --processo
+
+assert Cafeteria :[deadlock free[F] ]
+
+-- Explicacao de evento deterministic e não deterministico
+-- Quando colocar a moeda a escolhe depende da maquina - nao deterministica

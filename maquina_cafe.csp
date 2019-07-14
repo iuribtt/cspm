@@ -1,0 +1,12 @@
+channel coffee, almond_milk, choc, ran_out -- define os eventos e ran ou
+sub = {coffee, almond_milk, choc}
+Max = 10 -- tamanho máximo	
+channel refil
+--channel choice 
+
+CM0(num) = --processo definido 
+	if ( num <= Max) then
+	([] choice:sub @ choice -> choice -> CM0(num+1)) -- processo [] ou no comeco é prefixado
+	else
+	(ran_out -> refil -> CM0(10)) --processo
+

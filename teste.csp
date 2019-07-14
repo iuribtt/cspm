@@ -1,0 +1,149 @@
+channel ev1, ev2, ev3
+
+channel ch0:{1,2,3}
+
+channel ch1:{ev1,ev2,ev3} -- {|ch0|} exibir todos os processos
+
+
+channel entrar, sair
+channel ch2:{entrar, sair}
+
+
+
+--possible_coins?x -> MaqCof(cmLimit, cmLimit, capuLimit, x, (moedas + moedas_usuario), capacidate_caixa)
+
+P0 = entrar -> sair -> P0
+
+
+P1 = ch1?x-> P1 -- entrada de dados
+
+y = {ev1,ev2,ev3} -- conjunto
+
+P3 = []  x:y @ x -> P3  -- escolha prefixada com conjuntos
+
+P4 = P1 ||| P0 -- interleaving - processo paralelo
+
+datatype lugar = casa| trabalho
+
+channel ev:lugar
+
+channel a, b, c, d
+sequencia = <a, b, c>
+
+get({x}) = x
+
+getH(<h>^r) = h
+
+getR(<h>^r) = r
+
+get3Ele(<a>^<b>^<c>) = <a,b>
+
+getEle(<g>) = g
+
+
+---ATM exemplo
+-- datatype PIN = aa | bb | cc | dd | ee	
+-- datatype int = V1 | V2 | V3 | V4  
+-- CARD = {0..9}
+-- datatype pinnumbers = PIN.Int
+-- fpin(c) = PIN.c
+-- PINs = {fpin(c) | c <- CARD}
+-- WA = {10,20,30,40,50}
+
+-- channel incard, outcard:CARD
+-- channel pin:PINs
+-- channel req, dispense:WA
+
+-- --ATM1 = incard?c -> pin.fpin(c) ->
+-- --req?n -> dispense!n ->
+-- --outcard.c -> ATM1
+
+-- ATM1 = incard?c -> pin.fpin(c) -> req?n -> dispense!n -> outcard.c -> ATM1
+
+channel batePalma, ergueBraco, pula, agacha
+
+SUPERIOR = batePalma -> SUPERIOR
+			[]
+		   ergueBraco -> SUPERIOR
+
+INFERIOR = pula -> INFERIOR
+			[]
+		   agacha -> INFERIOR
+
+CORPO = SUPERIOR ||| INFERIOR
+
+X = {batePalma, ergueBraco,
+pula,agacha}
+
+assert CORPO [T= RUN(X)
+
+assert RUN(X) [T= CORPO
+
+channel jogaBola, encontra, trabalha, acao1, acao2
+
+JOAO = jogaBola -> encontra -> acao1 -> JOAO
+PEDRO = trabalha -> encontra  -> acao2 -> PEDRO
+-- nessa tipo de paralelismo as opções de ambos iram ocorrer 
+-- em sequencia até o evento em comum acontecer no caso  "encontrar"
+JOAO_PEDRO = JOAO [|{encontra}|] PEDRO  
+-- ou 
+JOAO_PEDRO_ALL = JOAO [|Events|] PEDRO -- sinconiza todos os eventos em comum
+
+
+	-- COPY(a,b) = a?x -> b!x -> COPY(a,b)
+
+	-- CALL = COPY(2,23)
+
+P = a -> P
+
+RENOMEAR = P [[a<-b, a<-d]]
+
+
+datatype Tree = Leaf.Int | Node.Int.Tree.Tree
+
+flatten(Leaf.x) = <x>
+flatten(Node.x.l.r) = flatten(l)^<x>^flatten(r)
+
+F = flatten(Node.1.Leaf.2.Leaf.2)
+
+
+channel done
+channel t, z : {0..1}.Bool
+
+
+C = t?y?w -> STOP
+
+
+channel v1, v2, v3
+ENTRADA = <(v1, 1), (v2, 2), (v3, 3)> --create a sequence with
+
+
+func(entrada, v, incremento)=
+	if (0 == incremento) then
+		v1 -> func(entrada, 0, incremento + 1)
+
+	else
+		v2 -> func(entrada, 1, incremento + 1)
+
+exec = func(ENTRADA, 0, 0)
+
+
+
+{- Obter valores da tupla -}
+getVariavel((variavel, valor)) = variavel
+-- uso: getValor(findVariavelValor(ENTRADA, 1, 0))
+getValor((variavel, valor)) = valor
+
+findVariavelValor_(<tupla>^r, posicao, incremento) =
+		if(posicao == incremento) then
+			tupla
+		else
+			findVariavelValor_(r, posicao, incremento + 1)
+
+findVariavelValor(entrada, posicao) =
+	findVariavelValor_(entrada, posicao, 0)
+
+-- uso: test_findVariavelValor
+test_findVariavelValor = findVariavelValor(ENTRADA, 5) 
+
+-- length(e)

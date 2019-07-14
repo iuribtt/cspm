@@ -1,0 +1,93 @@
+datatype TOption = coffee | coffeeAndMilk | capuccino | Esperando
+TCoin = {1, 2, 5, 10}
+channel Option, Dispense, FazerCoffee, AcionarMaquina: TOption
+channel InsertCoin: TCoin
+channel EscolherCoffee, Troco, CaixaCheio, Wait, Jato
+channel SendCash
+channel SendTroco
+
+datatype TMixOption = milk | coffee_only | chocolate
+channel Misturar, Colocar, Refil: TMixOption
+
+MAX_COFFEE = 10
+
+PRECO_CAFE = 2
+PRECO_CAFEELEITE = 3
+PRECO_CAPUCCINO =  7
+
+
+MAX = 2 -- Constante numérica
+MAXSAFE = 20
+
+
+Caixa(moedasUsuario, cash) = 
+
+	if(cash < MAXSAFE) then
+		if (moedasUsuario >= PRECO_CAFEELEITE) then 	
+			EscolherCoffee -> Option.coffee -> FazerCoffee!coffee -> Troco -> Caixa(0, cash-PRECO_CAFE)
+			[]
+			EscolherCoffee -> Option.coffeeAndMilk -> FazerCoffee!coffeeAndMilk -> Troco -> Caixa(0, cash-PRECO_CAFEELEITE)
+			[]
+			InsertCoin?5 -> Caixa(moedasUsuario+5, cash+5)
+		else
+			InsertCoin?x -> Caixa(moedasUsuario+x, cash+x)
+	else --Fazer sangria e/ou devolver moedas do usuario
+		CaixaCheio -> Caixa(0, 0)
+
+
+COFFEE = Colocar.coffee_only -> COFFEE  -- SKIP or Stop
+
+MILK = Colocar.milk -> MILK -- SKIP or Stop
+
+CHOCOLATE = Colocar.chocolate -> CHOCOLATE -- SKIP or Stop
+
+
+Misturador(opt) =
+
+	AcionarMaquina?opt -> (
+			if(opt == coffee) then
+				COFFEE
+			else if(opt == coffeeAndMilk) then
+				COFFEE ||| MILK
+			else
+				COFFEE ||| CHOCOLATE
+	)
+
+MaquinaDeCafe(maxCoffee, maxMilk, maxChocolate) = 
+
+	FazerCoffee?opt -> (
+		if(maxCoffee <= 0 and maxMilk <= 0) then 
+
+			
+				if(opt == coffee) then
+					AcionarMaquina!coffee -> MaquinaDeCafe(maxCoffee-1, maxMilk, maxChocolate)
+				else if(opt == coffeeAndMilk) then
+					AcionarMaquina!coffeeAndMilk -> MaquinaDeCafe(maxCoffee-1, maxMilk-1, maxChocolate)
+				else --Continuar com a logica aqui
+					SKIP
+			
+		else
+			Refil.coffee_only -> Refil.milk -> MaquinaDeCafe(MAX_COFFEE, MAX_COFFEE, MAX_COFFEE)
+	)
+
+Preparador = MaquinaDeCafe(MAX_COFFEE, MAX_COFFEE, MAX_COFFEE)[|{|AcionarMaquina|}|] Misturador(Esperando)
+Cafeteria = Caixa(0, 0) [|{|FazerCoffee|}|] Preparador
+
+assert Cafeteria :[deadlock free [F]]
+
+-- Cafeteria = Caixa(0, 0)[|{|SendCash, SendTroco|}|]MaquinaDeCafe(MAX)
+
+
+-- testes
+-- COFFEE_ = Colocar.coffee_only -> COFFEE_
+
+-- MILK_ = Colocar.milk -> MILK_
+
+-- CHOCOLATE_ = Colocar.chocolate -> CHOCOLATE_
+
+
+-- CORPO = COFFEE ||| MILK_
+
+
+
+-- assert CORPO :[deadlock free[F] ]
