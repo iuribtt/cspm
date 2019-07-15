@@ -1,7 +1,7 @@
 
 channel int1_test, int2_test, int3_test, int4_test
 
-datatype op = add | sub | div | multi
+-- datatype op = add | sub | div | multi
 -- flags
 channel MaximaProfundidade, OperacaoSoma
 
@@ -67,7 +67,7 @@ TEST = |~| _ : {0} @ TEST
 TEST2 = [] (x,y) : {(int1_test,1), (int2_test,1), (int3_test,1)} @ x -> TEST2
 
 
-channel sum : Int
+channel sum, sub : Int
 
 
 TEST3(tuplas, variavel, soma) = [] t : ENTRADA_TESTE2
@@ -76,9 +76,9 @@ TEST3(tuplas, variavel, soma) = [] t : ENTRADA_TESTE2
 
 COMBINACOES_SOMA(tuplas, variavel, soma, deep) = 
 	if(deep >0) then
-		[] t : diff(Set(ENTRADA_TESTE2), {{}})
-							@ sum.SUM(seq(t), variavel, 0)
-							 -> sum.soma -> COMBINACOES_SOMA(<>, variavel, soma + SUM(getHeadList(seq(t)), variavel, 0), deep-1)
+		[] t : diff(Set(tuplas), {{}})
+							@ sum.(soma + SUM(seq(t), variavel, 0))
+							-> COMBINACOES_SOMA(tuplas, variavel, soma + SUM(getHeadList(seq(t)), variavel, 0), deep-1)
 	else
 		STOP
 
@@ -88,8 +88,23 @@ SUM(entrada, variavel, soma) =
 	else
 		soma
 
+COMBINACOES_SUBTRACAO(tuplas, variavel, subtracao, deep) = 
+	if(deep >0) then
+		[] t : diff(Set(tuplas), {{}})
+							@ sub.(subtracao - SUB(seq(t), variavel, 0))
+							-> COMBINACOES_SUBTRACAO(tuplas, variavel, subtracao - SUB(getHeadList(seq(t)), variavel, 0), deep-1)
+	else
+		STOP
+
+SUB(entrada, variavel, subtracao) = 
+	if(length(entrada) != 0) then
+		SUM(getSemHead(entrada), variavel, subtracao - getValor(head(entrada)) )
+	else
+		subtracao
+
 test8 = TEST3(<>, 5,0)
-test15 = COMBINACOES_SOMA(<>, 5,0, 20)
+test15 = COMBINACOES_SOMA(ENTRADA_TESTE2, 5,0, 20)
+test16 = COMBINACOES_SUBTRACAO(ENTRADA_TESTE2, 5,0, 20)
 test9 = SUM(ENTRADA_TESTE, 5,2)
 
 exec9(s) = seq(s)
