@@ -1,0 +1,103 @@
+
+channel int1_test, int2_test, int3_test, int4_test
+
+datatype op = add | sub | div | multi
+-- flags
+channel MaximaProfundidade, OperacaoSoma
+
+ENTRADA_TESTE = <(int1_test, 1), (int2_test, 2), (int3_test, 5)> --create a sequence with
+
+ENTRADA_TESTE2 = {(int1_test, 1), (int2_test, 2), (int3_test, 5)} -- utilizar
+
+elementos(tuplas, l) =
+		if (length(tuplas) >= 1 ) then
+			elementos(getSemHead(tuplas), head(tuplas))
+		else
+			l
+
+test_funcoes = ENTRADA_TESTE^<head(ENTRADA_TESTE)>
+test_sequence = <<(int1_test,1)>, <(int2_test,1)>, <(int3_test,5), (int1_test,1)> >
+test_funcoes2 = head(test_sequence)
+test_funcoes3 = tail(test_sequence)
+test_funcoes4 = getLast(test_sequence)
+test_funcoes5 = getSemLast(test_sequence)
+test_funcoes6 = getSemLast(<(int1_test, 3)>)
+test_funcoes7 = length(test_sequence)
+
+--fatorial de um numero
+fatorial(count) = 
+	if (count > 0 ) then
+	  count * fatorial(count -1)
+	else
+	 1
+
+getHeadList(<r>^t) = <r>
+getHead(<>) = <>
+getHead(<r>) = r
+getHead(<r>^t) = r
+-- getSemLast(t^<l>) = t
+getSemLast(<>) = <>
+getSemLast(<r>) = <>
+getSemLast(<r>^t^<l>) = <r>^t
+getLast(<r>^t^<l>) = l
+
+getSemHead(<>) = <>
+getSemHead(<r>) = <>
+getSemHead(<r>^t) = t
+
+{- Obter valores da tupla -}
+getVariavel((variavel, valor)) = variavel
+-- uso: getValor(findVariavelValor(ENTRADA_TESTE, 1, 0))
+getValor((variavel, valor)) = valor
+
+findVariavelValor_(<tupla>^r, posicao, incremento) =
+		if(posicao == incremento) then
+			tupla
+		else
+			findVariavelValor_(r, posicao, incremento + 1)
+
+findVariavelValor(entrada, posicao) =
+	findVariavelValor_(entrada, posicao, 0)
+
+-- uso: test_findVariavelValor
+test_findVariavelValor = findVariavelValor(ENTRADA_TESTE, 1) 
+
+TEST = |~| _ : {0} @ TEST
+
+TEST2 = [] (x,y) : {(int1_test,1), (int2_test,1), (int3_test,1)} @ x -> TEST2
+
+
+channel sum : Int
+
+
+TEST3(tuplas, variavel, soma) = [] t : ENTRADA_TESTE2
+							@ getVariavel(head(<t>)) 
+							 -> sum.soma -> TEST3(getSemHead(<t>), variavel, soma + SUM(getHeadList(<t>), variavel, 0))
+
+COMBINACOES_SOMA(tuplas, variavel, soma, deep) = 
+	if(deep >0) then
+		[] t : diff(Set(ENTRADA_TESTE2), {{}})
+							@ sum.SUM(seq(t), variavel, 0)
+							 -> sum.soma -> COMBINACOES_SOMA(<>, variavel, soma + SUM(getHeadList(seq(t)), variavel, 0), deep-1)
+	else
+		STOP
+
+SUM(entrada, variavel, soma) = 
+	if(length(entrada) != 0) then
+		SUM(getSemHead(entrada), variavel, soma + getValor(head(entrada)) )
+	else
+		soma
+
+test8 = TEST3(<>, 5,0)
+test15 = COMBINACOES_SOMA(<>, 5,0, 20)
+test9 = SUM(ENTRADA_TESTE, 5,2)
+
+exec9(s) = seq(s)
+test11 = Union({{int1_test}, {int2_test}})
+test12 = Inter({{int1_test}, {int2_test, int1_test}, {int3_test},{int1_test}, {int2_test}, {int3_test}})
+test13 = Set({(int1_test, 1), (int2_test, 2), (int3_test, 5)})
+test14 = exec9(Set(ENTRADA_TESTE2))
+
+assert test8 :[deadlock free[F] ]
+assert test15 :[deadlock free[F] ]
+

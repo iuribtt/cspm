@@ -222,7 +222,7 @@ test10 = head(combinacoesEntreElementosDaSequencia(ENTRADA_TESTE, 0, <>))
 
 SUM(entrada, variavel, soma) = 
 	if(length(entrada) != 0) then
-		SUM(getSemHead(entrada), variavel, getValor(head(entrada)) )
+		SUM(getSemHead(entrada), variavel, soma + getValor(head(entrada)) )
 	else
 		soma
 

@@ -1,0 +1,38 @@
+{- 
+
+Objetivo gerar possiveis programas dando uma entrada e uma saida espedifica especifica
+
+-}
+
+--channel x, y, z -- evento 
+include "projetoV4_funcoes_channels.csp"
+
+channel int1, int2, int3, int4
+
+-- variavel x = 1, y = 2, z = 0
+ENTRADA = <(int1, 1), (int2, 2), (int3, 0)> --create a sequence with
+-- variavel x = 1, y = 2, z = 3 equivale a uma soma z = x + y
+SAIDA = <(int1, 1), (int2, 2), (int3, 5)>
+
+MEMORIA = ENTRADA
+
+test_M = MEMORIA == SAIDA -- verificar se sao iguais
+
+
+
+-- uso: prog(<(x, 1), (y, 2), (z, 3)>, <(x, 1), (y, 2), (z, 3)>, 2)
+prog(entrada, memoria, saida, deep) = 
+		if(deep == 0) then
+			MaximaProfundidade -> STOP
+		else if (memoria == SAIDA) then  --achar a saida 
+			SKIP
+		else (
+
+				prog(entrada, <(int1, 1), (int2, 2), 
+					(int3, getValor(findVariavelValor(memoria,2)) + 
+						getValor(findVariavelValor(memoria,1)))>
+					, saida, deep-1)
+			)
+
+-- uso: EXEC
+EXEC = prog(ENTRADA, ENTRADA, SAIDA, 3)
