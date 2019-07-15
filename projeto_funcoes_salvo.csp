@@ -175,7 +175,7 @@ findVariavelValor(entrada, posicao) =
 -- uso: test_findVariavelValor
 test_findVariavelValor = findVariavelValor(ENTRADA, 1) 
 
-DIV = |~| _ : {0} @ DIV
+DIV = |~| _ : {0..10} @ DIV
 
 
 productions(x) =  { x.z | z<-extensions(x) }

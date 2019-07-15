@@ -28,7 +28,7 @@ Caixa(moedasUsuario, cash) =
 			[]
 			EscolherCoffee -> Option.coffeeAndMilk -> FazerCoffee!coffeeAndMilk -> Troco -> Caixa(0, cash-PRECO_CAFEELEITE)
 			[]
-			InsertCoin?5 -> Caixa(moedasUsuario+5, cash+5)
+			InsertCoin?x -> Caixa(moedasUsuario+x, cash+x)
 		else
 			InsertCoin?x -> Caixa(moedasUsuario+x, cash+x)
 	else --Fazer sangria e/ou devolver moedas do usuario

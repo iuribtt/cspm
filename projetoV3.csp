@@ -9,10 +9,10 @@ Objetivo gerar possiveis programas dando uma entrada e uma saida espedifica espe
 --channel x, y, z -- evento 
 include "projeto_funcoes.csp"
 
-datatype var =  x | y | z
+channel varx, vary, varz
 datatype op = add | sub | div | multi
 
-datatype exp = expAttrBool.var.Bool | expAttrInt.var.Int | expSoma.var.Int.op.Int
+-- datatype exp = expAttrBool.var.Bool | expAttrInt.var.Int | expSoma.var.Int.op.Int
 
 -- datatype expressao = expressaoAttrB.var.Bool | atribuicao.var.Int
 -- datatype texpB = texptB.var.Bool
@@ -20,32 +20,25 @@ datatype exp = expAttrBool.var.Bool | expAttrInt.var.Int | expSoma.var.Int.op.In
 
 -- datatype TPrograma = skip | Atribuicao.var.texpA.programa | IF.texpB.programa
 
-datatype Soma = equal.var.Int.op.var.Int | somaLoop.Soma
+-- datatype Soma = equal.var.Int.op.var.Int | somaLoop.Soma
 
-datatype TPrograma = skip | AtribuicaoInt.var.Int | AtribuicaoSoma.var.Soma
+-- datatype TPrograma = skip | AtribuicaoInt.var.Int | AtribuicaoSoma.var.Soma
 
-channel programa: TPrograma
+-- channel programa: TPrograma
 
 -- flags
 channel MaximaProfundidade, OperacaoSoma
 
 -- variavel x = 1, y = 2, z = 0
-ENTRADA = <(x, 1), (y, 2), (z, 0)> --create a sequence with
+ENTRADA = <(varx, 1), (vary, 2), (varz, 0)> --create a sequence with
 -- variavel x = 1, y = 2, z = 3 equivale a uma soma z = x + y
-SAIDA = <(x, 1), (y, 2), (z, 5)>
+SAIDA = <(varx, 1), (vary, 2), (varz, 5)>
 
 MEMORIA = ENTRADA
 
 test_M = MEMORIA == SAIDA -- verificar se sao iguais
 
 
-
-
-{- -}
-func_soma(entrada, tuplaV0, tuplaV1, tuplaV2) = 
-
--- <tuplaV0, tuplaV1, (getVariavel(tuplaV2), getVariavel(tuplaV1) + getVariavel(tuplaV2)>
-OperacaoSoma
 
 
 -- uso: prog(<(x, 1), (y, 2), (z, 3)>, <(x, 1), (y, 2), (z, 3)>, 2)
@@ -56,45 +49,19 @@ prog(entrada, memoria, saida, deep) =
 			SKIP
 		else (
 
-				( 
-				programa.AtribuicaoSoma.getVariavel(findVariavelValor(memoria,2))
-				.equal
-				.getVariavel(findVariavelValor(memoria,0)).getValor(findVariavelValor(memoria,0))
-				.add
-				.getVariavel(findVariavelValor(memoria,1)).getValor(findVariavelValor(memoria,1)) 
+				-- (
+				-- programa.AtribuicaoSoma.getVariavel(findVariavelValor(memoria,2))
+				-- .equal
+				-- .getVariavel(findVariavelValor(memoria,2)).getValor(findVariavelValor(memoria,2))
+				-- .add
+				-- .getVariavel(findVariavelValor(memoria,1)).getValor(findVariavelValor(memoria,1)) 
 
-				->	
-				prog(entrada, <(x, 1), (y, 2), 
-				(z, getValor(findVariavelValor(memoria,2)) + getValor(findVariavelValor(memoria,0)) + 
-					getValor(findVariavelValor(memoria,1)))>, saida, deep-1)
-				)
-				[] 
-				(
-				programa.AtribuicaoSoma.getVariavel(findVariavelValor(memoria,2))
-				.equal
-				.getVariavel(findVariavelValor(memoria,2)).getValor(findVariavelValor(memoria,2))
-				.add
-				.getVariavel(findVariavelValor(memoria,0)).getValor(findVariavelValor(memoria,0)) 
-
-				->	
-				prog(entrada, <(x, 1), (y, 2), 
-					(z, getValor(findVariavelValor(memoria,2)) + getValor(findVariavelValor(memoria,0)))>
-					, saida, deep-1)
-				)
-				[]
-				(
-				programa.AtribuicaoSoma.getVariavel(findVariavelValor(memoria,2))
-				.equal
-				.getVariavel(findVariavelValor(memoria,2)).getValor(findVariavelValor(memoria,2))
-				.add
-				.getVariavel(findVariavelValor(memoria,1)).getValor(findVariavelValor(memoria,1)) 
-
-				->	
-				prog(entrada, <(x, 1), (y, 2), 
-					(z, getValor(findVariavelValor(memoria,2)) + 
+				-- ->	
+				prog(entrada, <(varx, 1), (vary, 2), 
+					(varz, getValor(findVariavelValor(memoria,2)) + 
 						getValor(findVariavelValor(memoria,1)))>
 					, saida, deep-1)
-				)
+				-- )
 			)
 
 -- uso: EXEC

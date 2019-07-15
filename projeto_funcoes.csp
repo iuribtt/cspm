@@ -12,13 +12,15 @@
 -- datatype Toperacao = soma | subtracao | divisao | multiplicacao
 -- channel operacao : Toperacao
 
-datatype nome =  int1 | int2 | int3 | int4
+channel int1, int2, int3, int4
 
 -- datatype TVaraivel = varI.nome.Int | varB.nome.Bool
 
 -- channel variavel: TVaraivel
 
 ENTRADA_TESTE = <(int1, 1), (int2, 2), (int3, 5)> --create a sequence with
+
+
 
 -- channel A : (nome, Int)
 
@@ -81,9 +83,9 @@ exec3 = combinationUtil(ENTRADA_TESTE, 0, 0, length(ENTRADA_TESTE), <>)
 --create combinacoes dos elementos em 1, 2, 3, 4...
 combinacoes(tuplas, cobinacoesDe, count, tamanho, parcial, semHead, saida) = 
 		if( count < cobinacoesDe - 1) then
-			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, parcial^getHeadList(semHead), getSemHead(semHead), saida)
+			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, parcial^getHeadList(semHead), getSemLast(semHead), saida)
 		else if (count <= tamanho) then
-			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, getSemHead(parcial), semHead, saida)
+			combinacoes(tuplas, cobinacoesDe, count+1, tamanho, getSemLast(parcial), semHead, saida)
 		else
 			saida^<parcial>
 
@@ -95,7 +97,7 @@ combinacoes2(tuplas, v1, v2, combinacoes, temp, saida, debug, flag) =
 	else -- caso chegou no maximo de combinacoes
 		-- o temp bateu as combinacoes adiciona na saida, remove a cabe e incrementa v2
 		if (v1+combinacoes <= length(tuplas) and length(temp) == combinacoes and v2 < length(tuplas)) then 
-			combinacoes2(tuplas, v1, v2+1, combinacoes, getSemHead(temp), saida^<temp>, debug+1, true)
+			combinacoes2(tuplas, v1, v2+1, combinacoes, getSemLast(temp), saida^<temp>, debug+1, true)
 		--adiciona a variavel na cabeca, e incrementa o v2
 		else if (v1+combinacoes <= length(tuplas) and v1+combinacoes <= length(tuplas) and length(temp) < combinacoes) then 
 			combinacoes2(tuplas, v1, v2, combinacoes, temp^<findVariavelValor(tuplas, v2)>, saida, debug * 100, true)
@@ -107,23 +109,32 @@ combinacoes2(tuplas, v1, v2, combinacoes, temp, saida, debug, flag) =
 exec6 = combinacoes2(ENTRADA_TESTE,0,0,3, <>, <>, 1, false)
 
 
-combinacoesDe(tuplas, count, saida)=
+combinacoesEntreElementosDaSequencia(tuplas, count, saida)=
 		if (count <= length(tuplas)) then
-			combinacoesDe(tuplas, count+1, saida^combinacoes2(tuplas,0,0,count+1, <>, <>, 1, false))
+			combinacoesEntreElementosDaSequencia(tuplas, count+1, saida^combinacoes2(tuplas,0,0,count+1, <>, <>, 1, false))
 		else
 			saida
 
-exec7 = combinacoesDe(ENTRADA_TESTE, 0, <>)
+exec7 = combinacoesEntreElementosDaSequencia(ENTRADA_TESTE, 0, <>)
+exec8 = length(combinacoesEntreElementosDaSequencia(ENTRADA_TESTE, 0, <>))
 
+elementos(tuplas, l) =
+		if (length(tuplas) >= 1 ) then
+			elementos(getSemHead(tuplas), head(tuplas))
+		else
+			l
 
-test = ENTRADA_TESTE^<head(ENTRADA_TESTE)>
-test1 = <<(int1,1)>, <(int2,1)>, <(int3,5), (int1,1)> >
-test2 = head(test1)
-test3 = tail(test1)
-test4 = getLast(test1)
-test5 = getSemHead(test1)
-test6 = getSemHead(<(int1, 3)>)
-test7 = length(test1)
+-- test_funcoes8 = elementos(combinacoesEntreElementosDaSequencia(ENTRADA_TESTE, 0, <>), null)
+-- test_funcoes8 = elementos(ENTRADA_TESTE, null)
+
+test_funcoes = ENTRADA_TESTE^<head(ENTRADA_TESTE)>
+test_sequence = <<(int1,1)>, <(int2,1)>, <(int3,5), (int1,1)> >
+test_funcoes2 = head(test_sequence)
+test_funcoes3 = tail(test_sequence)
+test_funcoes4 = getLast(test_sequence)
+test_funcoes5 = getSemLast(test_sequence)
+test_funcoes6 = getSemLast(<(int1, 3)>)
+test_funcoes7 = length(test_sequence)
 
 --fatorial de um numero
 fatorial(count) = 
@@ -151,11 +162,18 @@ totalCombinacaoSimple(termos, combinacoes) =
 exec4 = totalCombinacaoSimple(4, 2)
 
 getHeadList(<r>^t) = <r>
--- getSemHead(t^<l>) = t
+getHead(<>) = <>
+getHead(<r>) = r
+getHead(<r>^t) = r
+-- getSemLast(t^<l>) = t
+getSemLast(<>) = <>
+getSemLast(<r>) = <>
+getSemLast(<r>^t^<l>) = <r>^t
+getLast(<r>^t^<l>) = l
+
 getSemHead(<>) = <>
 getSemHead(<r>) = <>
-getSemHead(<r>^t^<l>) = <r>^t
-getLast(<r>^t^<l>) = l
+getSemHead(<r>^t) = t
 
 {- Obter valores da tupla -}
 getVariavel((variavel, valor)) = variavel
@@ -174,8 +192,54 @@ findVariavelValor(entrada, posicao) =
 -- uso: test_findVariavelValor
 test_findVariavelValor = findVariavelValor(ENTRADA_TESTE, 1) 
 
-DIV = |~| _ : {0} @ DIV
+TEST = |~| _ : {0} @ TEST
 
+TEST2 = [] (x,y) : {(int1,1), (int2,1), (int3,1)} @ x -> TEST2
+
+
+channel sum : Int
+
+ENTRADA_TESTE2 = {(int1, 1), (int2, 2), (int3, 5)}
+
+TEST3(tuplas, variavel, soma) = [] t : ENTRADA_TESTE2
+							@ getVariavel(head(<t>)) 
+							 -> sum.soma -> TEST3(getSemHead(<t>), variavel, soma + SUM(getHeadList(<t>), variavel, 0))
+
+TEST4(tuplas, variavel, soma, deep) = 
+	if(deep >0) then
+		[] t : diff(Set(ENTRADA_TESTE2), {{}})
+							@ getVariavel(head(seq(t))) 
+							 -> sum.soma -> TEST4(<>, variavel, soma + SUM(getHeadList(seq(t)), variavel, 0), deep-1)
+	else
+		SKIP
+
+-- TEST3(tuplas, variavel, soma) = [] t : {<(int, 1)>, <(int, 2), (int, 4)>, <(int, 6)>} 
+-- 						@ getVariavel(head(t)) 
+-- 						-> TEST3(getSemHead(t), variavel + soma , soma + SUM(getHeadList(t), variavel, 0))
+
+test10 = head(combinacoesEntreElementosDaSequencia(ENTRADA_TESTE, 0, <>))
+
+
+SUM(entrada, variavel, soma) = 
+	if(length(entrada) != 0) then
+		SUM(getSemHead(entrada), variavel, getValor(head(entrada)) )
+	else
+		soma
+
+test8 = TEST3(<>, 5,0)
+test15 = TEST4(<>, 5,0, 20)
+test9 = SUM(ENTRADA_TESTE, 5,2)
+
+exec9(s) = seq(s)
+test11 = Union({{int1}, {int2}})
+test12 = Inter({{int1}, {int2, int1}, {int3},{int1}, {int2}, {int3}})
+test13 = Set({(int1, 1), (int2, 2), (int3, 5)})
+test14 = exec9(Set({(int1, 1), (int2, 2), (int3, 5)}))
+-- test13 = Union({{int1}, {int2}})
+-- test14 = Union({{int1}, {int2}})
+
+assert test8 :[deadlock free[F] ]
+assert test15 :[deadlock free[F] ]
 
 -- productions(x) =  { x.z | z<-extensions(x) }
 -- channel c : {0..9}
@@ -183,3 +247,15 @@ DIV = |~| _ : {0} @ DIV
 -- P = c!7->SKIP [| {| c |} |] c?x->Q(x)
 
 -- nametype T = ({(int1, 1), (int2, 2), (int3, 5)})
+
+
+{-
+test12 = Inter({{int1}}) <--execute
+
+panic: the program has detected an inconsistent internal state.
+    This means that there is a bug in libcspm, not a bug in your input script.
+    Please report this bug using the contact link at https://www.cs.ox.ac.uk/projects/fdr/.
+    In particular, please include the input script that caused this error and a brief
+    description of how to reproduce the problem. Please also include the following message:
+        Prelude.foldr1: empty list
+-}
