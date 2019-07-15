@@ -3,17 +3,21 @@ channel int1, int2, int3, int4
 -- variavel x = 1, y = 2, z = 0
 ENTRADA = {(int1, 1), (int2, 2), (int3, 0)} -- utilizar
 
-SAIDA = {(int3, 0), (int1, 1), (int2, 2)} 
+MEMORIA = {(int1, 1), (int2, 2), (int3, 0)} -- utilizar
+
+SAIDA = {(int1, 1), (int2, 2), (int3, 5)} 
 
 channel c : ENTRADA
 
-teste = ENTRADA == SAIDA
+channel combinacao_soma
+
+test = ENTRADA == SAIDA
 
 ENTRADA_SEQ = <(int1, 1), (int2, 2), (int3, 0)> -- utilizar
 
 SAIDA_SEQ = <(int3, 0), (int1, 1), (int2, 2)> 
 
-teste2 = ENTRADA_SEQ == SAIDA_SEQ
+test2 = ENTRADA_SEQ == SAIDA_SEQ
 
 elem(_, <>) = false
 elem(e, <x>^s) = e==x or elem(e,s)
@@ -28,10 +32,11 @@ VARIAVEIS_INTER(variaveis, variavel) =
 		||| t : variaveis @ c.t -> STOP
 			-- -> VARIAVEIS(variaveis, variavel)
 
-teste3 = VARIAVEIS(ENTRADA, 5)
-teste4 = VARIAVEIS_INTER(ENTRADA, 5)
+test3 = VARIAVEIS(ENTRADA, 5)
+test4 = VARIAVEIS_INTER(ENTRADA, 5)
 
-assert teste3 :[deadlock free[F] ]
+assert test3 :[deadlock free[F] ]
+assert test4 :[deadlock free[F] ]
 
 -- encontra um determinada variavel na lista
 findVariavel(var, entrada_seq) =
@@ -41,9 +46,9 @@ findVariavel(var, entrada_seq) =
 	else
 		findVariavel(var, getSemHead(entrada_seq))
 
-teste5 = findVariavel(int2 ,ENTRADA_SEQ)
+test5 = findVariavel(int2 ,ENTRADA_SEQ)
 
---remove um determinada variavel pelo nomeda lista
+--remove um determinada variavel pelo nome da lista
 removerVariavel(varName, entrada_seq) =
 	if(length(entrada_seq) > 0) then 
 		if(getVariavel(head(entrada_seq)) == varName) then
@@ -53,15 +58,15 @@ removerVariavel(varName, entrada_seq) =
 	else
 		<>
 
-teste6 = removerVariavel(int1 ,ENTRADA_SEQ)
+test6 = removerVariavel(int1 ,ENTRADA_SEQ)
 
 adicionarVariavel(tupla, entrada_seq) = 
 			entrada_seq^<tupla>
 
-teste7 = adicionarVariavel((int1,5) ,ENTRADA_SEQ)
+test7 = adicionarVariavel((int1,5) ,ENTRADA_SEQ)
 
 -- remove e adiciona a variavel atualizada
-teste8 = adicionarVariavel((int1,11), removerVariavel(int1, ENTRADA_SEQ))
+test8 = adicionarVariavel((int1,11), removerVariavel(int1, ENTRADA_SEQ))
 
 getHeadList(<r>^t) = <r>
 getHead(<>) = <>
@@ -94,3 +99,82 @@ findVariavelValor(entrada, posicao) =
 
 -- uso: test_findVariavelValor
 test_findVariavelValor = findVariavelValor(ENTRADA_SEQ, 1) 
+
+
+TEST(variaveis, variavel) = 
+		[] t : variaveis @ c.t -> STOP
+
+
+channel sum : Int
+
+channel ACHOU, NAO_ACHOU
+channel elemento : SAIDA
+
+COMBINACOES_SOMA(tuplas, soma) = 
+-- if(deep >0) then
+	[] t : diff(Set(tuplas), {{}})
+						@ sum.(soma + SUM(seq(t), 0)) -> COMBINACOES_SOMA(tuplas, soma + SUM(seq(t), 0))
+						
+-- else
+-- 	STOP
+
+SUM(entrada, soma) = 
+if(length(entrada) != 0) then
+	SUM(getSemHead(entrada), soma + getValor(head(entrada)) )
+else
+	soma
+
+COMUTACAO_SOMA(variaveis, memoria, deep) = 
+
+	if (memoria == SAIDA) then  --achar a saida 
+		ACHOU -> STOP
+	else if (deep <= 0 ) then
+		NAO_ACHOU -> STOP
+	else
+		[] v : variaveis @ 
+					[] elementos_combinacao : diff(Set(memoria), {{}})
+						@ getVariavel(v)
+						--  -> sum.getValor(v) ->
+						-- sum.SUM(seq(elementos_combinacao), 0) 
+						-> COMUTACAO_SOMA(memoria, ATUALIZAR_MEMORIA(seq(memoria),
+						  getVariavel(v), SUM(seq(elementos_combinacao), 0)), deep -1)
+	--|||
+	
+-- {(int1, 1), (int2, 2), (int3, 0)}
+
+
+COMUTACAO_SOMA2(variaveis, memoria) = 
+
+	if (memoria == SAIDA) then  --achar a saida 
+		SKIP
+	else
+		[] l : variaveis @ 
+					[] elementos_combinacao : diff(Set(variaveis), {{}})
+						@ getVariavel(l) -> sum.getValor(l) -> sum.SUM(seq(elementos_combinacao), 0) -> COMUTACAO_SOMA2(variaveis, memoria)
+
+test9 = COMUTACAO_SOMA(ENTRADA, ENTRADA, 3) --TEST
+test17 = COMUTACAO_SOMA2(ENTRADA, ENTRADA) --TEST
+
+conjuntos_elementos = diff(Set(ENTRADA), {{}}) 
+test10 = head(seq(conjuntos_elementos))
+test11 = SUM(seq(test10), 0)
+test12 = COMBINACOES_SOMA(ENTRADA, 0)
+
+ATUALIZAR_MEMORIA(memoria, varName, valor) =
+	set(removerVariavel(varName, memoria)^<(varName, valor)>)
+
+test13 = removerVariavel(int1, ENTRADA_SEQ)
+
+test14 = findVariavel(int2 ,ENTRADA_SEQ)
+
+-- test15 = ATUALIZAR_MEMORIA(ENTRADA, 0, 88)
+
+test15 = ATUALIZAR_MEMORIA(seq(MEMORIA), int3, 5)
+
+test16 = if ATUALIZAR_MEMORIA(seq(MEMORIA), int3, 5) == SAIDA then True else False
+
+test18 = if ENTRADA == SAIDA then True else False
+
+assert test9 :[deadlock free[F] ]
+
+--ATUALIZAR_MEMORIA(ENTRADA_SEQ, getVariavel(l), SUM(seq(elementos_combinacao), 0))

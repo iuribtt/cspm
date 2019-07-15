@@ -9,6 +9,9 @@ REPEAT = [] xxx:Sigma @ xxx -> REPEAT
 
 REPEAT1 = [] x:{0..10} @ xx.x -> REPEAT1
 
+REPEAT2 = [] x:{0..10} @ xx.x
+				-> [] y:{20..30} @ xx.x -> xx.y -> REPEAT2
+
 channel v1, v2, v3
 -- datatype valor = x| y| z
 
