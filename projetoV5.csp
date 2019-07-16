@@ -1,0 +1,200 @@
+datatype var_test = int1_test | int2_test | int3_test | int4_test
+
+channel entrada_channel : ENTRADA_TESTE
+channel sum : Int
+channel combinacao_soma
+channel ACHOU, NAO_ACHOU
+channel elemento : SAIDA_TESTE
+channel valores_memoria: var_test.Int.var_test.Int.var_test.Int
+
+-- variavel x = 1, y = 2, z = 0
+ENTRADA_TESTE = {(int1_test, 1), (int2_test, 2), (int3_test, 0)} -- utilizar
+
+MEMORIA_TESTE = {(int1_test, 1), (int2_test, 2), (int3_test, 0)} -- utilizar
+
+SAIDA_TESTE = {(int1_test, 1), (int2_test, 2), (int3_test, 5)} 
+
+
+test1 = ENTRADA_TESTE == SAIDA_TESTE
+
+ENTRADA_TESTE_SEQ = <(int1_test, 1), (int2_test, 2), (int3_test, 0)> -- utilizar
+
+SAIDA_TESTE_SEQ = <(int3_test, 0), (int1_test, 1), (int2_test, 2)> 
+
+test2 = ENTRADA_TESTE_SEQ == SAIDA_TESTE_SEQ
+
+elem(_, <>) = false
+elem(e, <x>^s) = e==x or elem(e,s)
+
+conjunto(a) = a
+
+VARIAVEIS(variaveis, variavel) = 
+		[] t : variaveis @ entrada_channel.t -> STOP
+			-- -> VARIAVEIS(variaveis, variavel)
+test3 = VARIAVEIS(ENTRADA_TESTE, 5)
+
+VARIAVEIS_INTER(variaveis, variavel) = 
+		||| t : variaveis @ entrada_channel.t -> STOP
+			-- -> VARIAVEIS(variaveis, variavel)
+
+test4 = VARIAVEIS_INTER(ENTRADA_TESTE, 5)
+
+assert test3 :[deadlock free[F] ]
+assert test4 :[deadlock free[F] ]
+
+-- encontra um determinada variavel na lista
+findVariavel(var, entrada_seq) =
+
+	if(getVariavel(head(entrada_seq)) == var) then
+		head(entrada_seq)
+	else
+		findVariavel(var, getSemHead(entrada_seq))
+
+test5 = findVariavel(int2_test ,ENTRADA_TESTE_SEQ)
+
+--remove um determinada variavel pelo nome da lista
+removerVariavel(varName, entrada_seq) =
+	if(length(entrada_seq) > 0) then 
+		if(getVariavel(head(entrada_seq)) == varName) then
+			getSemHead(entrada_seq)
+		else
+			<head(entrada_seq)>^removerVariavel(varName, getSemHead(entrada_seq))
+	else
+		<>
+
+test6 = removerVariavel(int1_test ,ENTRADA_TESTE_SEQ)
+
+adicionarVariavel(tupla, entrada_seq) = 
+			entrada_seq^<tupla>
+
+test7 = adicionarVariavel((int1_test,5) ,ENTRADA_TESTE_SEQ)
+
+-- remove e adiciona a variavel atualizada
+test8 = adicionarVariavel((int1_test,11), removerVariavel(int1_test, ENTRADA_TESTE_SEQ))
+
+getHeadList(<r>^t) = <r>
+getHead(<>) = <>
+getHead(<r>) = r
+getHead(<r>^t) = r
+-- getSemLast(t^<l>) = t
+getSemLast(<>) = <>
+getSemLast(<r>) = <>
+getSemLast(<r>^t^<l>) = <r>^t
+getLast(<r>^t^<l>) = l
+
+getSemHead(<>) = <>
+getSemHead(<r>) = <>
+getSemHead(<r>^t) = t
+
+
+{- Obter valores da tupla -}
+getVariavel((variavel, valor)) = variavel
+-- uso: getValor(findVariavelValor(ENTRADA_TESTE_TESTE, 1, 0))
+getValor((variavel, valor)) = valor
+
+findVariavelValor_(<tupla>^r, posicao, incremento) =
+		if(posicao == incremento) then
+			tupla
+		else
+			findVariavelValor_(r, posicao, incremento + 1)
+
+findVariavelValor(entrada, posicao) =
+	findVariavelValor_(entrada, posicao, 0)
+
+-- uso: test_findVariavelValor
+test_findVariavelValor = findVariavelValor(ENTRADA_TESTE_SEQ, 1) 
+
+
+TEST(variaveis, variavel) = 
+		[] t : variaveis @ entrada_channel.t -> STOP
+
+COMBINACOES_SOMA(tuplas, soma) = 
+-- if(deep >0) then
+	[] t : diff(Set(tuplas), {{}})
+						@ sum.(soma + SUM(seq(t), 0)) -> COMBINACOES_SOMA(tuplas, soma + SUM(seq(t), 0))
+						
+-- else
+-- 	STOP
+
+SUM(entrada, soma) = 
+if(length(entrada) != 0) then
+	SUM(getSemHead(entrada), soma + getValor(head(entrada)) )
+else
+	soma
+
+SUB(entrada, subtracao) = 
+if(length(entrada) != 0) then
+	SUB(getSemHead(entrada), subtracao - getValor(head(entrada)) )
+else
+	subtracao
+
+COMUTACAO(memoria, saida, deep) = 
+
+	if (memoria == SAIDA_TESTE) then  --achar a saida 
+		exposeVariaveis(seq(memoria)) -> ACHOU -> STOP
+	else if (deep <= 0 ) then
+		exposeVariaveis(seq(memoria)) -> NAO_ACHOU -> STOP
+	else
+		COMUTACAO_SOMA(memoria, saida, deep)
+		|~|
+		-- []
+		COMUTACAO_SUBTRACAO(memoria, saida, deep)
+
+exposeVariaveis(memoria) =
+			valores_memoria.getVariavel(findVariavelValor(memoria, 0)).getValor(findVariavelValor(memoria, 0))
+			.getVariavel(findVariavelValor(memoria, 1)).getValor(findVariavelValor(memoria, 1))
+			.getVariavel(findVariavelValor(memoria, 2)).getValor(findVariavelValor(memoria, 2))
+
+COMUTACAO_SOMA(memoria, saida, deep)=
+		[] v : memoria @ 
+					[] elementos_combinacao : diff(Set(memoria), {{}})
+						@ exposeVariaveis(seq(memoria))
+						-> COMUTACAO(ATUALIZAR_MEMORIA_TESTE(seq(memoria),
+						  getVariavel(v), SUM(seq(elementos_combinacao), 0)), saida, deep -1)
+
+
+COMUTACAO_SUBTRACAO(memoria, saida, deep)=
+		[] v : memoria @ 
+					[] elementos_combinacao : diff(Set(memoria), {{}})
+						@ exposeVariaveis(seq(memoria))
+						-> COMUTACAO(ATUALIZAR_MEMORIA_TESTE(seq(memoria),
+						  getVariavel(v), SUB(seq(elementos_combinacao), 0)), saida, deep -1)
+
+COMUTACAO2(variaveis, memoria) = 
+
+	if (memoria == SAIDA_TESTE) then  --achar a saida 
+		SKIP
+	else
+		[] l : variaveis @ 
+					[] elementos_combinacao : diff(Set(variaveis), {{}})
+						@ getVariavel(l) -> sum.getValor(l) -> sum.SUM(seq(elementos_combinacao), 0) -> COMUTACAO2(variaveis, memoria)
+
+test9 = COMUTACAO(ENTRADA_TESTE, SAIDA_TESTE, 3) --TEST
+assert test9 :[deadlock free[F] ]
+
+conjuntos_elementos = diff(Set(ENTRADA_TESTE), {{}}) 
+test10 = head(seq(conjuntos_elementos))
+test11 = SUM(seq(test10), 0)
+test12 = COMBINACOES_SOMA(ENTRADA_TESTE, 0)
+
+ATUALIZAR_MEMORIA_TESTE(memoria, varName, valor) =
+	set(removerVariavel(varName, memoria)^<(varName, valor)>)
+
+test13 = removerVariavel(int1_test, ENTRADA_TESTE_SEQ)
+
+test14 = findVariavel(int2_test ,ENTRADA_TESTE_SEQ)
+
+-- test15 = ATUALIZAR_MEMORIA_TESTE(ENTRADA_TESTE, 0, 88)
+
+test15 = ATUALIZAR_MEMORIA_TESTE(seq(MEMORIA_TESTE), int3_test, 5)
+
+test16 = if ATUALIZAR_MEMORIA_TESTE(seq(MEMORIA_TESTE), int3_test, 5) == SAIDA_TESTE then True else False
+
+test18 = if ENTRADA_TESTE == SAIDA_TESTE then True else False
+
+
+
+--ATUALIZAR_MEMORIA_TESTE(ENTRADA_TESTE_SEQ, getVariavel(l), SUM(seq(elementos_combinacao), 0))
+
+EXECUTAR = COMUTACAO(ENTRADA_TESTE, SAIDA_TESTE, 3)
+assert EXECUTAR :[deadlock free[F] ]
