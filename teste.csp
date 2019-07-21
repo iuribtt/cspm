@@ -147,3 +147,21 @@ findVariavelValor(entrada, posicao) =
 test_findVariavelValor = findVariavelValor(ENTRADA, 5) 
 
 -- length(e)
+
+datatype var_test = int1 | int2 | int3 | int4
+
+-- datatype TOperacao = adicao | subtracao
+datatype operacao = add.var_test.Int.operacao | sub.var_test.Int.var_test.Int.operacao | var.var_test.Int.operacao | ponto_virgula 
+channel valor_operacao: operacao
+
+getSemHead(<>) = <>
+getSemHead(<rr>) = <>
+getSemHead(<rr>^taill) = taill
+
+funcOperacao(<v>) = var.getVariavel(v).getValor(v).ponto_virgula
+
+funcOperacao(combinacoes) = 
+			add.getVariavel(head(combinacoes)).getValor(head(combinacoes)).funcOperacao(getSemHead(combinacoes))
+	
+testFuncOperacao = funcOperacao(seq({(int1,3), (int2,5)})) 
+
