@@ -51,7 +51,7 @@ public class FDR {
 		}
 
 		fdr.libraryExit();
-		System.out.println(outputFDR);
+//		System.out.println(outputFDR);
 		
 		return outputFDR;
 
