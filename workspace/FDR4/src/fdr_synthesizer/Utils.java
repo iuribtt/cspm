@@ -44,7 +44,7 @@ public class Utils {
 				code = "<h3 align='center'>We don't need to do anything <br /> to achieve the result.</h3>"
 						+ "<b><h2 align='center'>XD</h2></b>";
 			}else {
-
+				
 				code = code.replaceAll("operation\\.(.*?)\\.(.*?)\\.(.*?)", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2b00ff'>$2</font> =");
 				code = code.replaceAll("add\\.(.*?)\\.([-,+]?\\d+)\\.", " + <font color='#2b00ff'>$1</font>");
 				code = code.replaceAll("sub\\.(.*?)\\.([-,+]?\\d+)\\.", " - <font color='#2b00ff'>$1</font>");
