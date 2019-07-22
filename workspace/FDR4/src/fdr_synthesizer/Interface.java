@@ -6,6 +6,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.DocumentFilter;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
@@ -33,10 +35,13 @@ import java.util.Scanner;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.Label;
 import java.awt.Window;
 
 import javax.swing.ScrollPaneConstants;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JTextPane;
 
 public class Interface extends JFrame {
 
@@ -49,6 +54,7 @@ public class Interface extends JFrame {
 	private JLabel lblGif;
 	private JScrollPane scrollPaneFdrOutput;
 	private JComboBox comboBox;
+	private JTextPane txtTraceToCode;
 
 	/**
 	 * Launch the application.
@@ -174,6 +180,7 @@ public class Interface extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				modelInput.addRow(new Object[]{"", ""});
 				modelOutput.addRow(new Object[]{"", ""});
+				
 			}
 		});
 		btnAddVariable.setBounds(10, 319, 105, 35);
@@ -282,10 +289,12 @@ public class Interface extends JFrame {
 		JScrollPane scrollPaneCode = new JScrollPane();
 		scrollPaneCode.setBounds(311, 61, 233, 293);
 		contentPane.add(scrollPaneCode);
-
-		JTextArea textArea = new JTextArea();
-		scrollPaneCode.setViewportView(textArea);
-		textArea.setEditable(false);
+		
+		txtTraceToCode = new JTextPane();
+		txtTraceToCode.setToolTipText("The code will be displayed here");
+		txtTraceToCode.setContentType("text/html");
+		txtTraceToCode.setText("<html><br /><br /><h2 align='center'>The code will be displayed <br /> here<br />...</h2></html>");
+		scrollPaneCode.setViewportView(txtTraceToCode);
 
 
 	}
@@ -381,7 +390,7 @@ public class Interface extends JFrame {
 				}
 				userInput = userInput.replaceFirst(",", "").concat(" }");
 
-				System.out.println(userInput);
+//				System.out.println(userInput);
 
 				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{USER_INPUT\\}", userInput);
 
@@ -394,25 +403,27 @@ public class Interface extends JFrame {
 				}
 				userExpectedOutput = userExpectedOutput.replaceFirst(",", "").concat(" }");
 
-				System.out.println(userExpectedOutput);
+//				System.out.println(userExpectedOutput);
 
 				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{USER_EXPECTED_OUTPUT\\}", userExpectedOutput);
 
 				//DEEP
 				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{DEEP\\}", 	String.valueOf(comboBox.getSelectedItem()));
 
-				System.out.println(strFileSynthesizer);
+//				System.out.println(strFileSynthesizer);
 				File fileCreated = createTemFile(strFileSynthesizer, "csp_sinthesize_file_temp", ".csp");
 
 
 				String fdrOutput = FDR.runFDR(fileCreated.getPath());
 
-				System.out.println(fdrOutput);
+//				System.out.println(fdrOutput);
 
 				txtOutputFDR.setText(fdrOutput);
 
 				txtOutputFDR.setVisible(true);
 				scrollPaneFdrOutput.setVisible(true);
+				
+				txtTraceToCode.setText(Utils.traceToCode(fdrOutput.substring(fdrOutput.indexOf("Trace: ")+7, fdrOutput.indexOf("_FOUND,") + 6), inputVariables, outputExpected));
 				
 				lblGif.setVisible(false);
 
