@@ -1,3 +1,15 @@
+
+-------------------------------------------------------
+-- Universidade Federal de Pernambuco
+-- 	Course: Specification of competing and distributed systems
+-- 	Title: Program Synthesizer
+-- 	Instructor: Alexandre Cabral Mota
+-- 	Student : Iúri Batista Teles
+--	Date: 2019-07-21\n"+
+--	Author: Iúri Batista Teles
+--
+-------------------------------------------------------
+
 datatype var = {USER_VARIABLES} --int1 | int2 | int3
 
 channel PROGRAM_FOUND, PROGRAM_NOT_FOUND
