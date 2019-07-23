@@ -132,7 +132,7 @@ funcOperacao(combination, operator) =
 			if (operator == addition) then
 				add.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
 			else if (operator == subtraction) then
-				sub.getVariavel(getLast(combination)).getValor(getLast(combination)).funcOperacao(getSemLast(combination), operator)
+				sub.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
 			else if (operator == multiplication) then
 				mult.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
 			else

@@ -1,4 +1,4 @@
-datatype var = int1 | int2 | int3 | int4
+datatype var = int1 | int2 | int3
 
 channel PROGRAM_FOUND, PROGRAM_NOT_FOUND
 datatype Tmemory_variable_value = memory.var.Int.Tmemory_variable_value| end_memoria
@@ -9,7 +9,7 @@ datatype Ttype_operations = addition | subtraction | multiplication | division
 datatype Toperation = equal.var.Toperation | add.var.Int.Toperation | sub.var.Int.Toperation | mult.var.Int.Toperation | div.var.Int.Toperation | semicolon 
 channel operation: Toperation
 -- variavel x = 1, y = 2, z = 0
-INPUT_USER = {(int1, 15), (int2, 2), (int3, 0)}
+INPUT_USER =   {(int1, 15), (int2, 2), (int3, 0)}
 
 OUTPUT_USER = {(int1, 15), (int2, 2), (int3, 47)} 
 
@@ -67,34 +67,34 @@ findVariavelValor(sequence, posicao) =
 	findVariavelValor_(sequence, posicao, 0)
 
 SUM(sequence, sum_total) = 
-if(length(sequence) != 0) then
-	SUM(getSemHead(sequence), sum_total + getValor(head(sequence)) )
-else
-	sum_total
+	if(length(sequence) != 0) then
+		SUM(getSemHead(sequence), sum_total + getValor(head(sequence)) )
+	else
+		sum_total
 
 SUB(sequence, subtration_total) = 
-if(length(sequence) != 0) then
-	SUB(getSemHead(sequence), subtration_total - getValor(head(sequence)) )
-else
-	subtration_total
+	if(length(sequence) != 0) then
+		SUB(getSemHead(sequence), subtration_total - getValor(head(sequence)) )
+	else
+		subtration_total
 
 MULT(sequence, multiplication_total) = 
-if(length(sequence) != 0) then
-	MULT(getSemHead(sequence), multiplication_total * getValor(head(sequence)) )
-else
-	multiplication_total
+	if(length(sequence) != 0) then
+		MULT(getSemHead(sequence), multiplication_total * getValor(head(sequence)) )
+	else
+		multiplication_total
 
 DIV(sequence, division_total) = 
-if(length(sequence) != 0) then
-	if (division_total == 1) then
-		DIV(getSemHead(sequence), getValor(head(sequence)) )
-	else
-		if (getValor(head(sequence)) != 0) then --evita division por 0
-			DIV(getSemHead(sequence), division_total / getValor(head(sequence)) )
+	if(length(sequence) != 0) then
+		if (division_total == 1) then
+			DIV(getSemHead(sequence), getValor(head(sequence)) )
 		else
-			DIV(getSemHead(sequence), division_total / 1)
-else
-	division_total
+			if (getValor(head(sequence)) != 0) then --evita division por 0
+				DIV(getSemHead(sequence), division_total / getValor(head(sequence)) )
+			else
+				DIV(getSemHead(sequence), division_total / 1)
+	else
+		division_total
 
 COMBINATION(current_memory, saida, deep) = 
 
@@ -172,4 +172,5 @@ UPDATE_MEMORY(current_memory, varName, valor) =
 	set(removerVariavel(varName, current_memory)^<(varName, valor)>)
 
 EXECUTAR = COMBINATION(INPUT_USER, OUTPUT_USER, 4)
+
 assert EXECUTAR :[deadlock free[F] ]
