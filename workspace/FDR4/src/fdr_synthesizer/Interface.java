@@ -19,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JTextArea;
 import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
@@ -42,6 +44,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTextPane;
+import javax.swing.Icon;
 
 public class Interface extends JFrame {
 
@@ -137,6 +140,29 @@ public class Interface extends JFrame {
 				return true;  
 			}
 		});
+
+		tableInput.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				int row = tableInput.getSelectedRow();
+				int column = tableInput.getSelectedColumn();
+				// resul is the new value to insert in the DB
+				String resul = tableInput.getValueAt(row, column).toString();
+				System.out.println(resul + "<<<<<<");
+
+				if(column == 0) {
+					// resul is the new value to insert in the DB
+					tableOutput.setValueAt(tableInput.getValueAt(row, column).toString(),row, column);
+				}
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {}
+		});
+
 		tableInput.getColumnModel().getColumn(0).setPreferredWidth(40);
 		tableInput.getColumnModel().getColumn(1).setPreferredWidth(40);	
 
@@ -160,6 +186,26 @@ public class Interface extends JFrame {
 				return true;  
 			}
 		});
+
+		tableOutput.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				int row = tableOutput.getSelectedRow();
+				int column = tableOutput.getSelectedColumn();
+				// resul is the new value to insert in the DB
+				String resul = tableOutput.getValueAt(row, column).toString();
+				if(column == 0) {
+					// resul is the new value to insert in the DB
+					tableInput.setValueAt(tableOutput.getValueAt(row, column).toString(),row, column);
+				}
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {}
+		});
 		tableOutput.getColumnModel().getColumn(0).setPreferredWidth(40);
 		tableOutput.getColumnModel().getColumn(1).setPreferredWidth(40);	
 
@@ -178,9 +224,9 @@ public class Interface extends JFrame {
 		JButton btnAddVariable = new JButton("Add Variable");
 		btnAddVariable	.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				modelInput.addRow(new Object[]{"", ""});
-				modelOutput.addRow(new Object[]{"", ""});
-				
+				modelInput.addRow(new Object[]{"var" + (modelInput.getRowCount() + 1), "0"});
+				modelOutput.addRow(new Object[]{"var" + (modelOutput.getRowCount()+ 1), "0"});
+
 			}
 		});
 		btnAddVariable.setBounds(10, 319, 105, 35);
@@ -197,6 +243,7 @@ public class Interface extends JFrame {
 		contentPane.add(btnRemove);
 
 		JButton btnSynthesizer = new JButton("Synthesizer");
+		btnSynthesizer.setToolTipText("Trigger FDR in order to synthesizer the program");
 		btnSynthesizer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Map<String, Integer> inputVariables = new LinkedHashMap<String, Integer>();
@@ -236,20 +283,56 @@ public class Interface extends JFrame {
 		btnSynthesizer.setBounds(189, 185, 112, 35);
 		contentPane.add(btnSynthesizer);
 
-		JLabel lblIcontip =new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
-		lblIcontip.setBounds(445, 11, 20, 25);
-		lblIcontip.setToolTipText("<html><body bgcolor=\"#ffffff\">Project uses CSPM and FDR to synthetize a simple operational program.</body></html>");
-		lblIcontip.addMouseListener(new MouseAdapter() {
+		JLabel lblIconTip = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+		lblIconTip.setBounds(445, 11, 20, 25);
+		lblIconTip.setToolTipText("<html><body bgcolor=\"#ffffff\">Project uses CSPM and FDR to synthetize a simple operational program.</body></html>");
+		lblIconTip.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
-				lblIcontip.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+				lblIconTip.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
 			}
 			@Override
 			public void mouseEntered(MouseEvent arg0) {
-				lblIcontip.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-on.gif")));
+				lblIconTip.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-on.gif")));
 			}
 		});
-		contentPane.add(lblIcontip);
+		contentPane.add(lblIconTip);
+		
+		JLabel lblIconTipOutput = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+		lblIconTipOutput.setToolTipText("<html><body bgcolor=\"#ffffff\">Expected variables' values after execute the program.</body></html>");
+		lblIconTipOutput.setBounds(10, 180, 25, 25);
+		lblIconTipOutput.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				lblIconTipOutput.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+			}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				lblIconTipOutput.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-on.gif")));
+			}
+		});
+		contentPane.add(lblIconTipOutput);
+		
+		JLabel lblIconTipInput = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+		lblIconTipInput.setToolTipText("<html><body bgcolor=\"#ffffff\">Variables that the program can use.</body></html>");
+		lblIconTipInput.setBounds(10, 45, 20, 25);
+		lblIconTipInput.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				lblIconTipInput.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+			}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				lblIconTipInput.setIcon(new ImageIcon(getClass().getResource("/images/icon-tip-on.gif")));
+			}
+		});
+		contentPane.add(lblIconTipInput);
+		
+		JLabel lblIconTipMaxDeep = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
+		lblIconTipMaxDeep.setToolTipText("<html><body bgcolor=\"#ffffff\">Define maximum deep channel creation to find a <br/> counterexemple which accepts or denie that <br/>the program can be created.</body></html>");
+		lblIconTipMaxDeep.setBounds(276, 91, 25, 25);
+		contentPane.add(lblIconTipMaxDeep);
+		
 
 		JLabel lblMaxDeep = new JLabel("<html><b>Max. deep:</b></h3></html>");
 		lblMaxDeep.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -283,15 +366,15 @@ public class Interface extends JFrame {
 		scrollPaneFdrOutput.setViewportView(txtOutputFDR);
 		txtOutputFDR.setWrapStyleWord(true);
 		txtOutputFDR.setEditable(false);
-		txtOutputFDR.setToolTipText("Output FDR4:");
+		txtOutputFDR.setToolTipText("Output FDR4.");
 		txtOutputFDR.setText("Output FDR4");
 
 		JScrollPane scrollPaneCode = new JScrollPane();
 		scrollPaneCode.setBounds(311, 61, 233, 293);
 		contentPane.add(scrollPaneCode);
-		
+
 		txtTraceToCode = new JTextPane();
-		txtTraceToCode.setToolTipText("The code will be displayed here");
+		txtTraceToCode.setToolTipText("The code will be displayed here.");
 		txtTraceToCode.setContentType("text/html");
 		txtTraceToCode.setText("<html><br /><br /><h2 align='center'>The code will be displayed <br /> here<br />...</h2></html>");
 		scrollPaneCode.setViewportView(txtTraceToCode);
@@ -357,7 +440,7 @@ public class Interface extends JFrame {
 	protected void callFDR(Map<String, Integer> inputVariables, Map<String, Integer> outputExpected) {
 
 		lblGif.setVisible(true);
-		
+
 		new Thread(new Runnable() {
 
 			@Override
@@ -390,7 +473,7 @@ public class Interface extends JFrame {
 				}
 				userInput = userInput.replaceFirst(",", "").concat(" }");
 
-//				System.out.println(userInput);
+				//				System.out.println(userInput);
 
 				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{USER_INPUT\\}", userInput);
 
@@ -403,28 +486,32 @@ public class Interface extends JFrame {
 				}
 				userExpectedOutput = userExpectedOutput.replaceFirst(",", "").concat(" }");
 
-//				System.out.println(userExpectedOutput);
+				//				System.out.println(userExpectedOutput);
 
 				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{USER_EXPECTED_OUTPUT\\}", userExpectedOutput);
 
+				int deepLevel = (int) comboBox.getSelectedItem();
 				//DEEP
-				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{DEEP\\}", 	String.valueOf(comboBox.getSelectedItem()));
+				strFileSynthesizer = strFileSynthesizer.replaceFirst("\\{DEEP\\}", 	String.valueOf(deepLevel));
 
-//				System.out.println(strFileSynthesizer);
+				//				System.out.println(strFileSynthesizer);
 				File fileCreated = createTemFile(strFileSynthesizer, "csp_sinthesize_file_temp", ".csp");
 
 
 				String fdrOutput = FDR.runFDR(fileCreated.getPath());
 
-//				System.out.println(fdrOutput);
+				//				System.out.println(fdrOutput);
 
 				txtOutputFDR.setText(fdrOutput);
 
 				txtOutputFDR.setVisible(true);
 				scrollPaneFdrOutput.setVisible(true);
-				
-				txtTraceToCode.setText(Utils.traceToCode(fdrOutput.substring(fdrOutput.indexOf("Trace: ")+7, fdrOutput.indexOf("_FOUND,") + 6), inputVariables, outputExpected));
-				
+
+				txtTraceToCode.setText(Utils.traceToCode(
+						fdrOutput.substring(fdrOutput.indexOf("Trace: ")+7, fdrOutput.indexOf("_FOUND,") + 6),
+						deepLevel,
+						inputVariables, outputExpected));
+
 				lblGif.setVisible(false);
 
 			}
