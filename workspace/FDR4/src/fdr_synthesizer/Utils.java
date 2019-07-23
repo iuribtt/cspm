@@ -31,11 +31,11 @@ public class Utils {
 		for(Map.Entry<String, Integer> map : expectedOutput.entrySet()){
 			String key = map.getKey();
 			Integer value = map.getValue();
-			expetedOutput = expetedOutput + "<b>" + key + "</b> = " + value +"; ";
+			expetedOutput = expetedOutput + "<b>" + key + "</b> = " + value +", ";
 			expetedOutputNotFound = expetedOutputNotFound + "&#160;<font color='#950054'><b>int</b></font> <font color='#2b00ff'>" + key + "</font> = " + value +";<br/>";
 			
 		}
-		
+	
 		expetedOutput = expetedOutput + " */";
 
 		if(trace.contains("PROGRAM_NOT_FOUND")) {

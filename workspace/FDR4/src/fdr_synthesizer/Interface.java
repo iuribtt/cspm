@@ -2,11 +2,13 @@ package fdr_synthesizer;
 
 import java.awt.EventQueue;
 
+import java.net.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -28,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -38,7 +41,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Label;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 
 import javax.swing.ScrollPaneConstants;
 import javax.swing.JComboBox;
@@ -118,6 +124,43 @@ public class Interface extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+
+		JLabel lblNewLabel = new JLabel(new ImageIcon(getClass().getResource("/images/copy-paste-off.png")));
+		lblNewLabel.setBounds(508, 40, 50, 50);
+		lblNewLabel.setToolTipText("Copy source to clipboard.");
+		lblNewLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				lblNewLabel.setIcon(new ImageIcon(getClass().getResource("/images/copy-paste-off.png")));
+			}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				lblNewLabel.setIcon(new ImageIcon(getClass().getResource("/images/copy-paste-on.png")));
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String sourceCode = "";
+				try {
+					sourceCode = txtTraceToCode.getDocument().getText(0, txtTraceToCode.getDocument().getLength());
+					
+					sourceCode = sourceCode.replaceAll("\\r|\\t|\\s|&#160;|nbsp;| ", " ");
+					sourceCode = sourceCode.replace(";", ";\n"); 		
+					sourceCode = sourceCode.replace("{", "{\n"); 		
+					sourceCode = sourceCode.replace("}", "}\n"); 		
+					sourceCode = sourceCode.replace("*/", "*/\n"); 		
+
+								        
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				StringSelection stringSelection = new StringSelection(sourceCode);
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				clipboard.setContents(stringSelection, null);
+			}
+		});
+
+		contentPane.add(lblNewLabel);
 
 		lblGif = new JLabel((new ImageIcon(getClass().getResource("/images/cat_no_time.gif"))));
 		lblGif.setBounds(320, 370, 220, 160);
@@ -222,7 +265,7 @@ public class Interface extends JFrame {
 		scrollPaneOUtput.setViewportView(tableOutput);
 
 		JButton btnAddVariable = new JButton("Add Variable");
-		btnAddVariable	.addActionListener(new ActionListener() {
+		btnAddVariable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modelInput.addRow(new Object[]{"var" + (modelInput.getRowCount() + 1), "0"});
 				modelOutput.addRow(new Object[]{"var" + (modelOutput.getRowCount()+ 1), "0"});
@@ -297,7 +340,7 @@ public class Interface extends JFrame {
 			}
 		});
 		contentPane.add(lblIconTip);
-		
+
 		JLabel lblIconTipOutput = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
 		lblIconTipOutput.setToolTipText("<html><body bgcolor=\"#ffffff\">Expected variables' values after execute the program.</body></html>");
 		lblIconTipOutput.setBounds(10, 180, 25, 25);
@@ -312,7 +355,7 @@ public class Interface extends JFrame {
 			}
 		});
 		contentPane.add(lblIconTipOutput);
-		
+
 		JLabel lblIconTipInput = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
 		lblIconTipInput.setToolTipText("<html><body bgcolor=\"#ffffff\">Variables that the program can use.</body></html>");
 		lblIconTipInput.setBounds(10, 45, 20, 25);
@@ -327,12 +370,12 @@ public class Interface extends JFrame {
 			}
 		});
 		contentPane.add(lblIconTipInput);
-		
+
 		JLabel lblIconTipMaxDeep = new JLabel(new ImageIcon(getClass().getResource("/images/icon-tip-off.gif")));
 		lblIconTipMaxDeep.setToolTipText("<html><body bgcolor=\"#ffffff\">Define maximum deep channel creation to find a <br/> counterexemple which accepts or denie that <br/>the program can be created.</body></html>");
 		lblIconTipMaxDeep.setBounds(276, 91, 25, 25);
 		contentPane.add(lblIconTipMaxDeep);
-		
+
 
 		JLabel lblMaxDeep = new JLabel("<html><b>Max. deep:</b></h3></html>");
 		lblMaxDeep.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -378,7 +421,6 @@ public class Interface extends JFrame {
 		txtTraceToCode.setContentType("text/html");
 		txtTraceToCode.setText("<html><br /><br /><h2 align='center'>The code will be displayed <br /> here<br />...</h2></html>");
 		scrollPaneCode.setViewportView(txtTraceToCode);
-
 
 	}
 
