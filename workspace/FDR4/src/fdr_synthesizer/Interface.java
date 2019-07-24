@@ -406,6 +406,7 @@ public class Interface extends JFrame {
 		contentPane.add(scrollPaneFdrOutput);
 
 		txtOutputFDR = new JTextArea();
+		txtOutputFDR.setLineWrap(true);
 		scrollPaneFdrOutput.setViewportView(txtOutputFDR);
 		txtOutputFDR.setWrapStyleWord(true);
 		txtOutputFDR.setEditable(false);
