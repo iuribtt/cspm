@@ -1,4 +1,4 @@
-# CSPM - Arquivos e projeto
+# CSPM  - Executar o projeto JAVA
 
 Universidade Federal de Pernambuco
 Course: Specification of competing and distributed systems
@@ -17,3 +17,4 @@ Exemplo: C:\Program Files\FDR\bin\fdr.jar
 *** Motivação
 Projeto craido com o intuito de sintetizar programas simples envolvendo operações matematica utilizando a 
 linguagem CSP em conjunto com o programa FDR4.
+

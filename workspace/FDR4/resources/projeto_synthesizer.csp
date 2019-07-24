@@ -5,184 +5,232 @@
 -- 	Title: Program Synthesizer
 -- 	Instructor: Alexandre Cabral Mota
 -- 	Student : Iúri Batista Teles
---	Date: 2019-07-21\n"+
+--	Date: 2019-07-21
 --	Author: Iúri Batista Teles
 --
 -------------------------------------------------------
 
 datatype var = {USER_VARIABLES} --int1 | int2 | int3
 
-channel PROGRAM_FOUND, PROGRAM_NOT_FOUND
 datatype Tmemory_variable_value = memory.var.Int.Tmemory_variable_value| end_memoria
-channel memory_variables_values: Tmemory_variable_value
 
 datatype Ttype_operations = addition | subtraction | multiplication | division
 
-datatype Toperation = equal.var.Toperation | add.var.Int.Toperation | sub.var.Int.Toperation | mult.var.Int.Toperation | div.var.Int.Toperation | semicolon 
+datatype Toperation = equal.var.Toperation | add.var.Int.Toperation | sub.var.Int.Toperation 
+						| mult.var.Int.Toperation | div.var.Int.Toperation | semicolon 
+
+
+
+channel memory_variables_values: Tmemory_variable_value
+
+channel PROGRAM_FOUND, PROGRAM_NOT_FOUND
+
 channel operation: Toperation
--- variavel x = 1, y = 2, z = 0
+
+-- Variable input
 INPUT_USER =  {USER_INPUT} -- {(int1, 15), (int2, 2), (int3, 0)}
 
+-- Expect output
 OUTPUT_USER = {USER_EXPECTED_OUTPUT} -- {(int1, 15), (int2, 2), (int3, 47)} 
+
+-- Max search deep
+DEEP = {DEEP} -- 4
 
 
 elem(_, <>) = false
 elem(e, <x>^s) = e==x or elem(e,s)
 
--- encontra um determinada variavel na lista
-findVariavel(v, entrada_seq) =
-	if(getVariavel(head(entrada_seq)) == v) then
-		head(entrada_seq)
+-- encontra um determinada variable na lista
+findvariable(v, input_sequence) =
+	if(getvariable(head(input_sequence)) == v) then
+		head(input_sequence)
 	else
-		findVariavel(v, getSemHead(entrada_seq))
+		findvariable(v, getWithoutHead(input_sequence))
 
---remove um determinada variavel pelo nome da lista
-removerVariavel(varName, entrada_seq) =
-	if(length(entrada_seq) > 0) then 
-		if(getVariavel(head(entrada_seq)) == varName) then
-			getSemHead(entrada_seq)
+--remove um determinada variable pelo nome da lista
+removeVAriable(varName, input_sequence) =
+	if(length(input_sequence) > 0) then 
+		if(getvariable(head(input_sequence)) == varName) then
+			getWithoutHead(input_sequence)
 		else
-			<head(entrada_seq)>^removerVariavel(varName, getSemHead(entrada_seq))
+			<head(input_sequence)>^removeVAriable(varName, getWithoutHead(input_sequence))
 	else
 		<>
 
-adicionarVariavel(tupla, entrada_seq) = 
-			entrada_seq^<tupla>
+addVariable_test(tupla, input_sequence) = 
+			input_sequence^<tupla>
 
+-- gets the first sequence element
 getHeadList(<r>^t) = <r>
 getHead(<>) = <>
 getHead(<r>) = r
 getHead(<r>^t) = r
--- getSemLast(t^<l>) = t
-getSemLast(<>) = <>
-getSemLast(<r>) = <>
-getSemLast(<r>^t^<l>) = <r>^t
+
+-- removes the sequence last element
+getWithoutLast(<>) = <>
+getWithoutLast(<r>) = <>
+getWithoutLast(<r>^t^<l>) = <r>^t
 getLast(<r>^t^<l>) = l
 
-getSemHead(<>) = <>
-getSemHead(<r>) = <>
-getSemHead(<r>^t) = t
+-- removes the sequence head
+getWithoutHead(<>) = <>
+getWithoutHead(<r>) = <>
+getWithoutHead(<r>^t) = t
 
 
-{- Obter valores da tupla -}
-getVariavel((variavel, valor)) = variavel
--- uso: getValor(findVariavelValor(ENTRADAEE, 1, 0))
-getValor((variavel, valor)) = valor
+{- get the tuple first element  i.e: (x,y) return x -}
+getvariable((variable, value)) = variable
+-- usage: getvalue(findVariableValue(ENTRADAEE, 1, 0))
 
-findVariavelValor_(<tupla>^r, posicao, incremento) =
-		if(posicao == incremento) then
+{- get the tuple second element i.e: (x,y) return y -}
+getvalue((variable, value)) = value
+
+{- the a element by position in a sequence of tuples <(x,y), (z,w)> -}
+findVariableValue(sequence, position) =
+	findVariableValue_(sequence, position, 0)
+
+{- use findVariableValue function -}
+findVariableValue_(<tupla>^r, position, increment) =
+		if(position == increment) then
 			tupla
 		else
-			findVariavelValor_(r, posicao, incremento + 1)
+			findVariableValue_(r, position, increment + 1)
 
-findVariavelValor(sequence, posicao) =
-	findVariavelValor_(sequence, posicao, 0)
 
+{- Sum all element of a sequence -}
 SUM(sequence, sum_total) = 
 	if(length(sequence) != 0) then
-		SUM(getSemHead(sequence), sum_total + getValor(head(sequence)) )
+		SUM(getWithoutHead(sequence), sum_total + getvalue(head(sequence)) )
 	else
 		sum_total
 
+{- Subtract all element of a sequence -}
 SUB(sequence, subtration_total) = 
 	if(length(sequence) != 0) then
-		SUB(getSemHead(sequence), subtration_total - getValor(head(sequence)) )
+		SUB(getWithoutHead(sequence), subtration_total - getvalue(head(sequence)) )
 	else
 		subtration_total
 
+{- Multiply all element of a sequence -}
 MULT(sequence, multiplication_total) = 
 	if(length(sequence) != 0) then
-		MULT(getSemHead(sequence), multiplication_total * getValor(head(sequence)) )
+		MULT(getWithoutHead(sequence), multiplication_total * getvalue(head(sequence)) )
 	else
 		multiplication_total
 
+{- Divide all element of a sequence 
+- TODO: check the rules when it is divided by 0, and so on
+-}
 DIV(sequence, division_total) = 
 	if(length(sequence) != 0) then
 		if (division_total == 1) then
-			DIV(getSemHead(sequence), getValor(head(sequence)) )
+			DIV(getWithoutHead(sequence), getvalue(head(sequence)) )
 		else
-			if (getValor(head(sequence)) != 0) then --evita division por 0
-				DIV(getSemHead(sequence), division_total / getValor(head(sequence)) )
+			if (getvalue(head(sequence)) != 0) then --evita division por 0
+				DIV(getWithoutHead(sequence), division_total / getvalue(head(sequence)) )
 			else
-				DIV(getSemHead(sequence), division_total / 1)
+				DIV(getWithoutHead(sequence), division_total / 1)
 	else
 		division_total
 
-COMBINATION(current_memory, saida, deep) = 
+{- Combine all operations (adition, subtratio, multiplication and division) in a external choice -}
+COMBINATION(current_memory, output, deep) = 
 
-	if (current_memory == OUTPUT_USER) then  --achar a saida 
-		memory_variables_values.exposeVariaveis(seq(current_memory)) -> PROGRAM_FOUND -> STOP
+	if (current_memory == OUTPUT_USER) then  --achar a output 
+		memory_variables_values.exposeVariables(seq(current_memory)) -> PROGRAM_FOUND -> STOP
 	else if (deep <= 0 ) then
-		memory_variables_values.exposeVariaveis(seq(current_memory)) -> PROGRAM_NOT_FOUND -> STOP
+		memory_variables_values.exposeVariables(seq(current_memory)) -> PROGRAM_NOT_FOUND -> STOP
 	else
-		COMBINATION_ADDITION(current_memory, saida, deep)
+		COMBINATION_ADDITION(current_memory, output, deep)
 		-- |~|
 		[]
-		COMBINATION_SUBTRATION(current_memory, saida, deep)
+		COMBINATION_SUBTRATION(current_memory, output, deep)
 		-- []
-		-- COMBINATION_MULTIPLICATION(current_memory, saida, deep)
+		-- COMBINATION_MULTIPLICATION(current_memory, output, deep)
 		-- []
-		-- COMBINATION_DIVISION(current_memory, saida, deep)
+		-- COMBINATION_DIVISION(current_memory, output, deep)
 
-exposeVariaveis(<v>) =
- 					memory.getVariavel(v).getValor(v).end_memoria
+-- put above
+exposeVariables(<v>) =
+ 					memory.getvariable(v).getvalue(v).end_memoria
 
-exposeVariaveis(current_memory) =
-			memory.getVariavel(head(current_memory)).getValor(head(current_memory)).exposeVariaveis(getSemHead(current_memory))
+{- Show the channel with memory (sequence of tuples) variables and values -}
+exposeVariables(current_memory) =
+			memory.getvariable(head(current_memory)).getvalue(head(current_memory)).exposeVariables(getWithoutHead(current_memory))
 
-funcOperacao(<v>, operator) = 
+
+
+{- Create the channel with the desidered operation -}
+funcOperation(<v>, operator) = 
 			if (operator == addition) then
-				add.getVariavel(v).getValor(v).semicolon
+				add.getvariable(v).getvalue(v).semicolon
 			else if (operator == subtraction) then
-				sub.getVariavel(v).getValor(v).semicolon
+				sub.getvariable(v).getvalue(v).semicolon
 			else if (operator == multiplication) then
-				mult.getVariavel(v).getValor(v).semicolon
+				mult.getvariable(v).getvalue(v).semicolon
 			else
-				div.getVariavel(v).getValor(v).semicolon
+				div.getvariable(v).getvalue(v).semicolon
 
-funcOperacao(combination, operator) = 
+{- Create the channel with the desidered operation -}
+funcOperation(combination, operator) = 
 			if (operator == addition) then
-				add.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
+				add.getvariable(head(combination)).getvalue(head(combination)).funcOperation(getWithoutHead(combination), operator)
 			else if (operator == subtraction) then
-				sub.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
+				sub.getvariable(head(combination)).getvalue(head(combination)).funcOperation(getWithoutHead(combination), operator)
 			else if (operator == multiplication) then
-				mult.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
+				mult.getvariable(head(combination)).getvalue(head(combination)).funcOperation(getWithoutHead(combination), operator)
 			else
-				div.getVariavel(head(combination)).getValor(head(combination)).funcOperacao(getSemHead(combination), operator)
-			
-COMBINATION_ADDITION(current_memory, saida, deep)=
+				div.getvariable(head(combination)).getvalue(head(combination)).funcOperation(getWithoutHead(combination), operator)
+
+{- Combine all sequence values and sum them, and assign to memory variables -}		
+COMBINATION_ADDITION(current_memory, output, deep)=
 		[] v : current_memory @
-					[] elementos_combinacao : diff(Set(current_memory), {{}}) @ 
-						operation.equal.getVariavel(v).funcOperacao(seq(elementos_combinacao), addition) ->
+					[] elements_combination : diff(Set(current_memory), {{}}) @ 
+						operation.equal.getvariable(v).funcOperation(seq(elements_combination), addition) ->
 						COMBINATION(UPDATE_MEMORY(seq(current_memory),
-						getVariavel(v), SUM(seq(elementos_combinacao), 0)), saida, deep -1)
+						getvariable(v), SUM(seq(elements_combination), 0)), output, deep -1)
 
-COMBINATION_SUBTRATION(current_memory, saida, deep)=
+{- Combine all sequence values and subtract them, and assign to memory variables -}
+COMBINATION_SUBTRATION(current_memory, output, deep)=
 		[] v : current_memory @
-					[] elementos_combinacao : diff(Set(current_memory), {{}}) @ 
-						operation.equal.getVariavel(v).funcOperacao(seq(elementos_combinacao), subtraction) ->
+					[] elements_combination : diff(Set(current_memory), {{}}) @ 
+						operation.equal.getvariable(v).funcOperation(seq(elements_combination), subtraction) ->
 						COMBINATION(UPDATE_MEMORY(seq(current_memory),
-						getVariavel(v), SUB(seq(elementos_combinacao), 0)), saida, deep -1)
+						getvariable(v), SUB(seq(elements_combination), 0)), output, deep -1)
 
-COMBINATION_MULTIPLICATION(current_memory, saida, deep)=
+{- Combine all sequence values and multiply them, and assign to memory variables -}
+COMBINATION_MULTIPLICATION(current_memory, output, deep)=
 		[] v : current_memory @
-					[] elementos_combinacao : diff(Set(current_memory), {{}}) @ 
-						operation.equal.getVariavel(v).funcOperacao(seq(elementos_combinacao), multiplication) ->
+					[] elements_combination : diff(Set(current_memory), {{}}) @ 
+						operation.equal.getvariable(v).funcOperation(seq(elements_combination), multiplication) ->
 						COMBINATION(UPDATE_MEMORY(seq(current_memory),
-						getVariavel(v), MULT(seq(elementos_combinacao), 1)), saida, deep -1)
+						getvariable(v), MULT(seq(elements_combination), 1)), output, deep -1)
 
-COMBINATION_DIVISION(current_memory, saida, deep)=
+{- Combine all sequence values and divide them, and assign to memory variables -}		
+COMBINATION_DIVISION(current_memory, output, deep)=
 		[] v : current_memory @
-					[] elementos_combinacao : diff(Set(current_memory), {{}}) @ 
-						operation.equal.getVariavel(v).funcOperacao(seq(elementos_combinacao), division) ->
+					[] elements_combination : diff(Set(current_memory), {{}}) @ 
+						operation.equal.getvariable(v).funcOperation(seq(elements_combination), division) ->
 						COMBINATION(UPDATE_MEMORY(seq(current_memory),
-						getVariavel(v), DIV(seq(elementos_combinacao), 1)), saida, deep -1)
+						getvariable(v), DIV(seq(elements_combination), 1)), output, deep -1)
 
-conjuntos_elementos = diff(Set(INPUT_USER), {{}}) 
+set_elements_test = diff(Set(INPUT_USER), {{}}) 
 
-UPDATE_MEMORY(current_memory, varName, valor) =
-	set(removerVariavel(varName, current_memory)^<(varName, valor)>)
+{- update the memory value -}
+UPDATE_MEMORY(current_memory, varName, value) =
+	set(removeVAriable(varName, current_memory)^<(varName, value)>)
 
-EXECUTAR = COMBINATION(INPUT_USER, OUTPUT_USER, {DEEP})
+{-EXECUTE THE PROGRAMA-}
+EXECUTE = COMBINATION(INPUT_USER, OUTPUT_USER, DEEP)
 
-assert EXECUTAR :[deadlock free[F] ]
+{- FIND A COUNTEREXAMPLE AND CHECK IF FOUND THE PROGRAM OR NOT -}
+assert EXECUTE :[deadlock free[F] ]
+
+-- Checks if the EXECUTE is divergence free
+-- assert EXECUTE :[divergence free]
+-- Checks if the EXECUTE is determnistc
+-- assert EXECUTE :[deterministic]
+
+-- EXECUTE [] DIV =FD DIV
+-- CHAOS [T= EXECUTE
+-- CHAOS [F= EXECUTE
