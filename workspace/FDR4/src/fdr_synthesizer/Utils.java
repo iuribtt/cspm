@@ -5,17 +5,15 @@ import java.util.Map;
 
 public class Utils {
 	
-	static int var = 0;
 	/**
-	 * 
-	 * @param trace
-	 * @param inputUser
-	 * @param expectedOutput
-	 * @return
+	 * Convert the track to Java format code
+	 * @param trace Frd4 log output
+	 * @param inputUser user input variable and values
+	 * @param expectedOutput variable and values expected
+	 * @return return Java code formating with html tags
 	 */
 	public static String traceToCode(String trace, int deepLevel, Map<String, Integer> inputUser, Map<String, Integer> expectedOutput ) {
 		String code = "";
-		var = -(-var);
 		
 		System.out.println(trace);
 		String variables = "";
